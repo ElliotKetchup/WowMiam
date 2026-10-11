@@ -1,0 +1,63 @@
+/* Device shell shared by every prototype: a 412 x 915 dp Android screen,
+   stacked screen layers, an effects plane, and the demo finger. */
+.screen {
+  position: relative; width: 412px; height: 915px; overflow: hidden;
+  border-radius: 34px; isolation: isolate; contain: layout paint;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.screen *, .screen *::before, .screen *::after { box-sizing: border-box; }
+.screen button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: inherit; }
+.screen input { font: inherit; color: inherit; background: none; border: 0; outline: 0; padding: 0; margin: 0; width: 100%; user-select: text; }
+.screen button:focus-visible, .screen [data-act]:focus-visible { outline: 3px solid #3A57B8; outline-offset: 2px; }
+.screen h1, .screen h2, .screen h3, .screen p, .screen ul, .screen ol { margin: 0; padding: 0; }
+.screen ul, .screen ol { list-style: none; }
+.screen img { display: block; max-width: none; }
+
+.screen .layers, .screen .layer { position: absolute; inset: 0; }
+.screen .layer { overflow: hidden; isolation: isolate; z-index: 0; }
+.screen .scroll { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; overscroll-behavior: contain; padding-top: 36px; }
+.screen .scroll::-webkit-scrollbar { display: none; }
+.screen [hidden] { display: none !important; }
+
+.screen .fx { position: absolute; inset: 0; pointer-events: none; z-index: 40; }
+.screen .expander { position: absolute; }
+.screen .ghost { pointer-events: none; }
+
+.screen .sbar {
+  position: absolute; top: 0; left: 0; right: 0; height: 36px; z-index: 50; pointer-events: none;
+  padding: 0 20px 0 24px; display: flex; align-items: center; justify-content: space-between;
+  font: 600 14px/1 "Instrument Sans", system-ui, sans-serif; letter-spacing: .01em;
+  color: var(--status, #1b1b1f); transition: color .3s;
+}
+.screen .sbar .icons { display: flex; gap: 4px; }
+.screen .sbar .ms { font-size: 17px; font-variation-settings: "FILL" 1, "wght" 600, "opsz" 20; }
+.screen .gbar { position: absolute; bottom: 8px; left: 50%; width: 108px; height: 4px; margin-left: -54px; border-radius: 2px; z-index: 50; background: var(--status, #1b1b1f); opacity: .5; pointer-events: none; transition: background .3s; }
+.screen.status-light { --status: #ffffff; }
+
+.screen .finger {
+  position: absolute; left: 0; top: 0; z-index: 60; width: 48px; height: 48px; margin: -24px 0 0 -24px;
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle, rgba(255,255,255,.55) 0 30%, rgba(30,30,40,.30) 31% 100%);
+  border: 2.5px solid rgba(255,255,255,.95); box-shadow: 0 6px 18px rgba(0,0,0,.28);
+}
+.screen .finger::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid rgba(255,255,255,.9); opacity: 0; }
+.screen .finger.down { scale: .8; transition: scale .1s; }
+.screen .finger.down::after { animation: finger-ring .45s ease-out; }
+@keyframes finger-ring { from { opacity: .9; transform: scale(.8); } to { opacity: 0; transform: scale(2.1); } }
+
+/* photo → cut-out (positions and colours per style) */
+.screen .raw { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.screen .scan { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none;
+  background: linear-gradient(180deg, transparent 0 40%, rgba(255,255,255,.0) 45%, rgba(255,255,255,.75) 50%, rgba(255,255,255,0) 55%, transparent 60%); }
+.screen .cut-badge { position: absolute; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+
+.screen .ms {
+  font-family: "Material Symbols Rounded"; font-weight: normal; font-style: normal; font-size: 24px; line-height: 1;
+  letter-spacing: normal; text-transform: none; white-space: nowrap; display: inline-block; font-feature-settings: "liga";
+  font-variation-settings: "FILL" 0, "wght" 500, "opsz" 24;
+}
+.screen .ms.fill { font-variation-settings: "FILL" 1, "wght" 500, "opsz" 24; }
+
+@keyframes pulse-soft { 0%, 100% { scale: 1; } 50% { scale: 1.05; } }
+@keyframes caret-blink { 50% { opacity: 0; } }

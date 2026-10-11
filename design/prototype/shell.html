@@ -1,0 +1,88 @@
+<title>WezFood maquettes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Sans:wdth,wght@75..100,400..700&family=Gloock&family=Schibsted+Grotesk:wght@400..800&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Onest:wght@400..700&display=swap">
+<link rel="stylesheet" href="__ICON_FONT_URL__">
+<style>
+/*__CSS__*/
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>WezFood</h1>
+    <p>Trois directions, à essayer comme une vraie app : touche, fais défiler, ouvre une recette, crée-en une. Ou lance la démo pour voir les transitions jouer toutes seules.</p>
+  </header>
+
+  <section class="proto" id="prototypes" aria-label="Prototypes interactifs">
+    <div class="switch" role="tablist">
+      <button type="button" role="tab" data-style="a"><span class="key ka">A</span><span>Marché<small>Néo-brutal, bento</small></span></button>
+      <button type="button" role="tab" data-style="b"><span class="key kb">B</span><span>Carnet<small>Éditorial</small></span></button>
+      <button type="button" role="tab" data-style="c"><span class="key kc">C</span><span>Émail<small>Minimal, progressif</small></span></button>
+    </div>
+    <div class="stage">
+      <div class="controls">
+        <button type="button" id="play" class="primary"><span aria-hidden="true">▶</span> Regarder la démo</button>
+        <button type="button" id="reset">Recommencer</button>
+      </div>
+      <div class="device" id="device"></div>
+      <p class="caption" id="caption" aria-live="polite"></p>
+      <div class="hints"><h3>À essayer</h3><ul id="hints"></ul></div>
+    </div>
+  </section>
+
+  <h2 class="part">Maquettes fixes</h2>
+
+  <section class="shots" id="accueil">
+    <h3>Accueil</h3>
+    <p>Derniers ajouts, tri A–Z, recherche combinée ET / OU.</p>
+    <div class="rail">
+      <figure><button type="button" data-full="img/a-home.webp" data-label="A · Marché · Accueil"><img src="img/a-home.webp" alt="Accueil, version Marché" loading="lazy"></button>
+        <figcaption><b><i class="ka"></i>A · Marché</b><span>Le dernier ajout prend la grande tuile, les plats débordent du cadre. Les filtres sont des chips reliées par ET / OU ; le groupe en pointillés joue le rôle des parenthèses.</span></figcaption></figure>
+      <figure><button type="button" data-full="img/b-home.webp" data-label="B · Carnet · Accueil"><img src="img/b-home.webp" alt="Accueil, version Carnet" loading="lazy"></button>
+        <figcaption><b><i class="kb"></i>B · Carnet</b><span>Une couverture de magazine. La recherche s'écrit comme une phrase : « Je veux du végé, en entrée ou en plat ». Le tri A–Z devient un index avec lettrines.</span></figcaption></figure>
+      <figure><button type="button" data-full="img/c-home.webp" data-label="C · Émail · Accueil"><img src="img/c-home.webp" alt="Accueil, version Émail, filtres ouverts" loading="lazy"></button>
+        <figcaption><b><i class="kc"></i>C · Émail</b><span>Calme d'abord, détails ensuite. Les filtres vivent dans une feuille qui se déplie.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="shots" id="dossiers">
+    <h3>Dossiers</h3>
+    <p>Rangés à la main, et beaux.</p>
+    <div class="rail">
+      <figure><button type="button" data-full="img/a-folders.webp" data-label="A · Marché · Dossiers"><img src="img/a-folders.webp" alt="Dossiers, version Marché" loading="lazy"></button>
+        <figcaption><b><i class="ka"></i>A · Marché</b><span>De vrais dossiers : chaque tuile a son onglet.</span></figcaption></figure>
+      <figure><button type="button" data-full="img/b-folders.webp" data-label="B · Carnet · Dossiers"><img src="img/b-folders.webp" alt="Dossiers, version Carnet" loading="lazy"></button>
+        <figcaption><b><i class="kb"></i>B · Carnet</b><span>Les dossiers favoris deviennent des couvertures, les autres un sommaire.</span></figcaption></figure>
+      <figure><button type="button" data-full="img/c-folders.webp" data-label="C · Émail · Dossiers"><img src="img/c-folders.webp" alt="Dossiers, version Émail" loading="lazy"></button>
+        <figcaption><b><i class="kc"></i>C · Émail</b><span>Chaque dossier est une assiette émaillée dont tu choisis la couleur du bord.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="shots" id="creation">
+    <h3>Création</h3>
+    <p>À la Notion : simple, coloré, gros boutons.</p>
+    <div class="rail">
+      <figure><button type="button" data-full="img/a-create.webp" data-label="A · Marché · Création"><img src="img/a-create.webp" alt="Création, version Marché" loading="lazy"></button>
+        <figcaption><b><i class="ka"></i>A · Marché</b><span>Une page façon Notion avec des propriétés et une barre de blocs colorés.</span></figcaption></figure>
+      <figure><button type="button" data-full="img/b-create.webp" data-label="B · Carnet · Création"><img src="img/b-create.webp" alt="Création, version Carnet" loading="lazy"></button>
+        <figcaption><b><i class="kb"></i>B · Carnet</b><span>Tu écris ta recette comme un article : titre géant, et des mots à toucher.</span></figcaption></figure>
+      <figure><button type="button" data-full="img/c-create.webp" data-label="C · Émail · Création"><img src="img/c-create.webp" alt="Création, version Émail, étape 3 sur 5" loading="lazy"></button>
+        <figcaption><b><i class="kc"></i>C · Émail</b><span>Une question par écran, des boutons énormes.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <aside class="how">
+    <h2>Pour me répondre</h2>
+    <p>Mélange librement, par exemple <q>les transitions de A, l'accueil de B, la création de C</q>. Dis aussi ce qui te gêne, même vaguement : « trop lent », « trop rebondissant », « pas assez fun ».</p>
+    <p>Les plats sont tes propres photos, détourées automatiquement. Dans la démo de création, la salade de courgettes part de ta photo brute pour montrer le détourage en direct.</p>
+  </aside>
+</div>
+
+<div class="lightbox" id="lb" hidden>
+  <img id="lb-img" alt="">
+  <button type="button" id="lb-close" aria-label="Fermer">×</button>
+  <p id="lb-label"></p>
+</div>
+
+<script>
+/*__JS__*/
+</script>

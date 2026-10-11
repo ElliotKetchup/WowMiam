@@ -21,6 +21,15 @@ python design/cutout.py /path/to/photos   # photos -> assets/dishes/*.webp
 
 Dish images are real photos cut out with `design/cutout.py` (IS-Net via rembg, then an ellipse fit on plates and bowls so the food stays opaque). In the app the same cut-out look comes from on-device subject segmentation.
 
+### Interactive prototypes
+
+`design/prototype/` holds a tappable prototype of each direction (navigation, filters, recipe sheet, cooking mode, folders, creation with the live cut-out) plus a scripted demo with a visible finger.
+
+```sh
+python design/prototype/build.py        # -> design/prototype/dist/wezfood-maquettes.html
+python design/prototype/check.py a      # plays style A's demo headless, reports errors, saves frames
+```
+
 ## Planned stack (subject to change)
 
 - Kotlin + Jetpack Compose, Material 3 as the base layer, fully re-themed
