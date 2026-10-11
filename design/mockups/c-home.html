@@ -26,7 +26,7 @@
   .rail { margin-top: 56px; padding: 0 16px; display: flex; gap: 14px; }
   .card { position: relative; flex: 0 0 156px; height: 176px; border-radius: 30px; padding: 16px; display: flex; align-items: flex-end; }
   .card b { font: 700 18px/1.05 var(--display); font-variation-settings: "wdth" 85, "opsz" 24; }
-  .card .dish { width: 128px; left: 14px; top: -54px; }
+  .card .dish { width: 128px; left: 14px; top: -56px; transform: rotate(-8deg); }
   .c1 { background: var(--butter); } .c2 { background: var(--mist); }
 
   /* the progressive filter sheet */
@@ -73,9 +73,9 @@
 
   <div class="lab"><span>Derniers ajouts</span><span>Tout voir</span></div>
   <div class="rail">
-    <div class="card c1"><img class="dish" src="../assets/food/shallow_pan_of_food.png" alt=""><b>Shakshuka du dimanche</b></div>
-    <div class="card c2"><img class="dish" src="../assets/food/pot_of_food.png" alt=""><b>Dahl corail coco</b></div>
-    <div class="card speckled"><img class="dish" src="../assets/food/green_salad.png" alt=""><b>Salade grecque</b></div>
+    <div class="card c1"><img class="dish" src="../assets/dishes/pizza-wrap.webp" alt=""><b>Pizza wrap</b></div>
+    <div class="card c2"><img class="dish" src="../assets/dishes/salade-courgettes.webp" alt=""><b>Salade de courgettes</b></div>
+    <div class="card speckled"><img class="dish" src="../assets/dishes/aubergines-pizza.webp" alt=""><b>Aubergines façon pizza</b></div>
   </div>
 
   <div class="scrim"></div>
@@ -86,16 +86,16 @@
     <div class="tray and">
       <div class="t"><em>ET</em>Toutes ces conditions</div>
       <div class="chips">
-        <span class="chip navy">Plat<i class="ms">close</i></span>
         <span class="chip navy">Végé<i class="ms">close</i></span>
+        <span class="chip navy">Four<i class="ms">close</i></span>
       </div>
     </div>
 
     <div class="tray or">
       <div class="t"><em>OU</em>Au moins une de celles-ci</div>
       <div class="chips">
-        <span class="chip butter">Cocotte<i class="ms">close</i></span>
-        <span class="chip butter">Poêle<i class="ms">close</i></span>
+        <span class="chip butter">Entrée<i class="ms">close</i></span>
+        <span class="chip butter">Plat<i class="ms">close</i></span>
         <span class="chip ghost"><i class="ms">add</i>Ajouter</span>
       </div>
     </div>
@@ -103,7 +103,7 @@
     <div class="sugg">
       <div class="tabs"><span>Type</span><span>Régime</span><span class="on">Ustensiles</span><span>Ingrédients</span></div>
       <div class="chips">
-        <span class="chip out"><i class="ms">add</i>Four</span>
+        <span class="chip out"><i class="ms">add</i>Poêle</span>
         <span class="chip out"><i class="ms">add</i>Mixeur</span>
         <span class="chip out"><i class="ms">add</i>Wok</span>
         <span class="chip out"><i class="ms">add</i>Robot</span>

@@ -16,7 +16,7 @@
 
   .summary { margin: 12px 16px 0; height: 76px; border-radius: 24px; background: var(--mist); padding: 0 14px 0 10px; display: flex; align-items: center; gap: 12px; }
   .summary .plate { position: relative; width: 56px; height: 56px; border-width: 4px; box-shadow: inset 0 0 0 5px var(--white); flex: none; }
-  .summary .plate .dish { width: 50px; left: 0; top: -8px; }
+  .summary .plate .dish { width: 52px; left: -2px; top: -10px; transform: rotate(-10deg); }
   .summary div { flex: 1; }
   .summary b { display: block; font: 700 17px/1.1 var(--display); font-variation-settings: "wdth" 88, "opsz" 24; }
   .summary small { font: 500 13px/1.3 var(--body); color: var(--muted); }
@@ -31,7 +31,9 @@
   }
   .opt b { font: 750 34px/1 var(--display); font-variation-settings: "wdth" 86, "opsz" 48; letter-spacing: -.02em; }
   .opt .radio { width: 26px; height: 26px; border-radius: 50%; border: 2px solid currentColor; flex: none; }
-  .opt .dish { width: 136px; right: -16px; top: -26px; }
+  .opt .dish { width: 128px; right: -12px; top: -14px; transform: rotate(-8deg); }
+  .opt .nodish { position: absolute; right: 18px; top: 50%; margin-top: -42px; width: 84px; height: 84px; border-radius: 50%; border: 2px dashed var(--muted); display: grid; place-items: center; color: var(--muted); }
+  .opt .nodish .ms { font-size: 34px; }
   .opt.on { border-color: var(--enamel); }
   .opt.on .radio { border: 0; background: var(--butter); display: grid; place-items: center; }
   .opt.on .radio .ms { font-size: 18px; color: var(--enamel); font-variation-settings: "wght" 700; }
@@ -54,8 +56,8 @@
   </header>
 
   <div class="summary">
-    <span class="plate"><img class="dish" src="../assets/food/pot_of_food.png" alt=""></span>
-    <div><b>Dahl corail coco</b><small>Photo et nom ajoutés</small></div>
+    <span class="plate"><img class="dish" src="../assets/dishes/pizza-wrap.webp" alt=""></span>
+    <div><b>Pizza wrap</b><small>Photo et nom ajoutés</small></div>
     <i class="ms">edit</i>
   </div>
 
@@ -63,9 +65,9 @@
   <h1 class="display">C'est quel type de plat ?</h1>
 
   <div class="choices">
-    <div class="opt"><span class="radio"></span><b>Entrée</b><img class="dish" src="../assets/food/green_salad.png" alt=""></div>
-    <div class="opt on speckled"><span class="radio"><i class="ms">check</i></span><b>Plat</b><img class="dish" src="../assets/food/curry_rice.png" alt=""></div>
-    <div class="opt"><span class="radio"></span><b>Dessert</b><img class="dish" src="../assets/food/custard.png" alt=""></div>
+    <div class="opt"><span class="radio"></span><b>Entrée</b><img class="dish" src="../assets/dishes/salade-courgettes.webp" alt=""></div>
+    <div class="opt on speckled"><span class="radio"><i class="ms">check</i></span><b>Plat</b><img class="dish" src="../assets/dishes/aubergines-pizza.webp" alt=""></div>
+    <div class="opt"><span class="radio"></span><b>Dessert</b><span class="nodish"><i class="ms">cake</i></span></div>
   </div>
 
   <p class="next-hint"><i class="ms">arrow_downward</i>Ensuite : régime, ustensiles, puis ingrédients</p>

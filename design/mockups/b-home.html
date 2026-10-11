@@ -25,8 +25,9 @@
   .feature { position: relative; margin-top: 46px; height: 230px; }
   .feature .block { position: absolute; inset: 0 -20px 30px -20px; background: var(--crevette); transform: skewY(-5deg); transform-origin: left; }
   .feature .kicker { position: absolute; left: 16px; top: 22px; font: 600 13px/1 var(--sans); }
-  .feature .dish { width: 226px; right: -50px; top: -50px; transform: rotate(10deg); }
-  .feature h2 { position: absolute; left: 14px; bottom: -16px; margin: 0; font-size: 52px; line-height: .9; max-width: 372px; }
+  .feature .dish { width: 238px; right: -64px; top: -40px; transform: rotate(-12deg); }
+  .feature .deck { position: absolute; left: 16px; top: 86px; max-width: 170px; margin: 0; font: 500 14px/1.35 var(--sans); }
+  .feature h2 { position: absolute; left: 14px; bottom: -16px; margin: 0; font-size: 52px; line-height: .9; max-width: 372px; font-size: 64px; }
   .feature .tags { position: absolute; left: 16px; top: 46px; display: flex; gap: 6px; }
 
   .index { margin: 44px 16px 0; display: grid; grid-template-columns: 54px 1fr; column-gap: 8px; }
@@ -44,7 +45,7 @@
   <div class="mast serif">WezFood</div>
   <div class="issue"><span>Le carnet d'Elliot</span><span>142 recettes</span></div>
 
-  <p class="ask serif">Je veux un <span class="w t">plat</span> <span class="w d">végé</span> <span class="op">ou</span> <span class="w d">vegan</span> <span class="plus"><i class="ms">add</i></span></p>
+  <p class="ask serif">Je veux du <span class="w d">végé</span>, en <span class="w t">entrée</span> <span class="op">ou</span> en <span class="w t">plat</span> <span class="plus"><i class="ms">add</i></span></p>
 
   <div class="sortline">
     <span>24 recettes trouvées</span>
@@ -54,22 +55,22 @@
   <section class="feature">
     <div class="block"></div>
     <span class="kicker">Ajoutée hier soir</span>
-    <div class="tags"><span class="tag">Plat</span><span class="tag">Végé</span><span class="tag">25 min</span></div>
-    <img class="dish" src="../assets/food/shallow_pan_of_food.png" alt="">
-    <h2 class="serif">Shakshuka du dimanche</h2>
+    <div class="tags"><span class="tag">Plat</span><span class="tag">Végé</span><span class="tag">15 min</span></div>
+    <p class="deck">La pâte à pizza remplacée par des galettes de fajitas.</p>
+    <img class="dish" src="../assets/dishes/pizza-wrap.webp" alt="">
+    <h2 class="serif">Pizza wrap</h2>
   </section>
 
   <section class="index">
-    <div class="L">D</div>
+    <div class="L">A</div>
     <ul>
-      <li><b>Dahl corail coco</b><span>Vegan</span></li>
-      <li><b>Dolmas maison</b><span>Vegan</span></li>
+      <li><b>Aubergines façon pizza</b><span>Plat</span></li>
     </ul>
     <div class="gap"></div>
-    <div class="L">F</div>
+    <div class="L">S</div>
     <ul>
-      <li><b>Falafels au four</b><span>Vegan</span></li>
-      <li><b>Frittata aux herbes</b><span>Végé</span></li>
+      <li><b>Salade composée</b><span>Entrée</span></li>
+      <li><b>Salade de courgettes</b><span>Entrée</span></li>
     </ul>
   </section>
 

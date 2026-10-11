@@ -13,12 +13,13 @@ Design exploration. `design/` holds three art directions, each applied to the th
 | C | **Émail** | minimalism + progressive disclosure: enamelware white / navy rim / butter yellow |
 
 ```sh
-pip install playwright==1.56.0 pillow
+pip install playwright==1.56.0 pillow "rembg[cpu]" opencv-python-headless
 python design/render.py            # mockups/*.html -> exports/*.png (412x915 dp @2x)
 python design/contact_sheet.py a- sheet.png
+python design/cutout.py /path/to/photos   # photos -> assets/dishes/*.webp
 ```
 
-The 3D dishes are placeholders from Microsoft Fluent Emoji (MIT, see `design/assets/food/LICENSE-fluentui-emoji.txt`). In the app, the user's own photo gets the same cut-out look via on-device subject segmentation.
+Dish images are real photos cut out with `design/cutout.py` (IS-Net via rembg, then an ellipse fit on plates and bowls so the food stays opaque). In the app the same cut-out look comes from on-device subject segmentation.
 
 ## Planned stack (subject to change)
 
