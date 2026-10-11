@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>C · Création — Émail</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="email.css">
+<style>
+  .bar { height: 56px; padding: 0 16px; display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 14px; }
+  .bar .x { width: 44px; height: 44px; border-radius: 50%; background: var(--mist); display: grid; place-items: center; }
+  .progress { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .progress i { height: 6px; border-radius: 3px; background: var(--mist); }
+  .progress .done { background: var(--enamel); }
+  .progress .now { background: var(--butter); }
+  .bar .n { font: 600 14px/1 var(--body); text-align: right; font-variant-numeric: tabular-nums; }
+
+  .summary { margin: 12px 16px 0; height: 76px; border-radius: 24px; background: var(--mist); padding: 0 14px 0 10px; display: flex; align-items: center; gap: 12px; }
+  .summary .plate { position: relative; width: 56px; height: 56px; border-width: 4px; box-shadow: inset 0 0 0 5px var(--white); flex: none; }
+  .summary .plate .dish { width: 50px; left: 0; top: -8px; }
+  .summary div { flex: 1; }
+  .summary b { display: block; font: 700 17px/1.1 var(--display); font-variation-settings: "wdth" 88, "opsz" 24; }
+  .summary small { font: 500 13px/1.3 var(--body); color: var(--muted); }
+
+  .step { margin: 28px 16px 0; font: 600 13px/1 var(--body); color: var(--muted); }
+  h1 { margin: 10px 16px 0; font-size: 42px; }
+
+  .choices { margin: 30px 16px 0; display: grid; gap: 14px; }
+  .opt {
+    position: relative; height: 124px; border-radius: 36px; border: 2px solid var(--enamel);
+    padding: 0 22px; display: flex; align-items: center; gap: 14px;
+  }
+  .opt b { font: 750 34px/1 var(--display); font-variation-settings: "wdth" 86, "opsz" 48; letter-spacing: -.02em; }
+  .opt .radio { width: 26px; height: 26px; border-radius: 50%; border: 2px solid currentColor; flex: none; }
+  .opt .dish { width: 136px; right: -16px; top: -26px; }
+  .opt.on { border-color: var(--enamel); }
+  .opt.on .radio { border: 0; background: var(--butter); display: grid; place-items: center; }
+  .opt.on .radio .ms { font-size: 18px; color: var(--enamel); font-variation-settings: "wght" 700; }
+
+  .next-hint { margin: 22px 16px 0; font: 500 14px/1.3 var(--body); color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .next-hint .ms { font-size: 18px; }
+
+  .foot { position: absolute; left: 16px; right: 16px; bottom: 30px; display: flex; align-items: center; justify-content: space-between; }
+  .foot span { font: 600 16px/1 var(--body); }
+  .foot .cta { height: 60px; padding: 0 28px; border-radius: 30px; background: var(--butter); display: inline-flex; align-items: center; gap: 8px; font: 700 18px/1 var(--body); }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <header class="bar">
+    <span class="x"><i class="ms">close</i></span>
+    <div class="progress"><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i></div>
+    <span class="n">3/5</span>
+  </header>
+
+  <div class="summary">
+    <span class="plate"><img class="dish" src="../assets/food/pot_of_food.png" alt=""></span>
+    <div><b>Dahl corail coco</b><small>Photo et nom ajoutés</small></div>
+    <i class="ms">edit</i>
+  </div>
+
+  <div class="step">Étape 3 sur 5</div>
+  <h1 class="display">C'est quel type de plat ?</h1>
+
+  <div class="choices">
+    <div class="opt"><span class="radio"></span><b>Entrée</b><img class="dish" src="../assets/food/green_salad.png" alt=""></div>
+    <div class="opt on speckled"><span class="radio"><i class="ms">check</i></span><b>Plat</b><img class="dish" src="../assets/food/curry_rice.png" alt=""></div>
+    <div class="opt"><span class="radio"></span><b>Dessert</b><img class="dish" src="../assets/food/custard.png" alt=""></div>
+  </div>
+
+  <p class="next-hint"><i class="ms">arrow_downward</i>Ensuite : régime, ustensiles, puis ingrédients</p>
+
+  <div class="foot">
+    <span>Retour</span>
+    <span class="cta">Continuer<i class="ms">arrow_forward</i></span>
+  </div>
+  <div class="gesture"></div>
+</body>
+</html>

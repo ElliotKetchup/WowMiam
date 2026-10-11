@@ -1,0 +1,52 @@
+/* Direction C — Émail.
+   Calm, minimal, bold where it matters. Borrowed from enamelware:
+   white bodies, navy rims, a butter-yellow accent, plates as containers.
+   Things reveal themselves progressively (sheets, steps). */
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Onest:wght@400..700&display=block");
+
+:root {
+  --white: #FFFFFF;
+  --enamel: #1D2E6B;    /* navy rim — text, outlines, primary actions */
+  --speck: #3A57B8;     /* speckle blue */
+  --butter: #F4D97B;
+  --mist: #EEF1F7;      /* quiet surface */
+  --muted: #5F6A88;
+
+  --display: "Bricolage Grotesque", "Arial Narrow", sans-serif;
+  --body: "Onest", "Helvetica Neue", Arial, sans-serif;
+}
+
+body { background: var(--white); color: var(--enamel); font-family: var(--body); }
+.display { font-family: var(--display); font-weight: 750; font-variation-settings: "wdth" 86, "opsz" 96; letter-spacing: -.02em; line-height: .95; }
+.dish { filter: saturate(.85) drop-shadow(0 14px 12px rgba(29, 46, 107, .25)); }
+
+/* enamel speckle texture for navy surfaces */
+.speckled {
+  background-color: var(--enamel);
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,.22) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,.16) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 45% 85%, rgba(255,255,255,.12) 0 .8px, transparent 1.3px);
+  background-size: 23px 19px, 31px 27px, 17px 23px;
+  color: var(--white);
+}
+
+/* an enamel plate: white body, navy rim, faint inner well */
+.plate {
+  border-radius: 50%; background: var(--white);
+  border: 7px solid var(--enamel);
+  box-shadow: inset 0 0 0 12px var(--white), inset 0 0 0 13.5px var(--mist), 0 10px 22px rgba(29, 46, 107, .12);
+}
+
+.navbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40; height: 88px; padding: 8px 32px 24px;
+  background: var(--white); border-top: 1px solid var(--mist);
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+}
+.navbar .tab { display: flex; flex-direction: column; align-items: center; gap: 4px; font: 600 12px/1 var(--body); color: var(--muted); }
+.navbar .tab .pill { width: 64px; height: 32px; border-radius: 16px; display: grid; place-items: center; }
+.navbar .tab.on { color: var(--enamel); }
+.navbar .tab.on .pill { background: var(--butter); }
+.navbar .tab.on .ms { font-variation-settings: "FILL" 1, "wght" 500, "opsz" 24; }
+.navbar .create { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 0 5px var(--white), 0 0 0 7px var(--enamel); }
+.navbar .create .ms { font-size: 32px; color: var(--white); }

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>A · Création — Marché</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="marche.css">
+<style>
+  .bar { height: 60px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
+  .sq { width: 44px; height: 44px; border-radius: 12px; background: var(--tile); display: grid; place-items: center; }
+  .bar .label { font: 600 14px/1 var(--body); color: var(--muted); }
+  .save {
+    height: 44px; padding: 0 16px; border-radius: 12px; background: var(--ink); color: var(--paper);
+    border: var(--line); box-shadow: 4px 4px 0 var(--brique);
+    display: inline-flex; align-items: center; font: 700 15px/1 var(--body);
+  }
+
+  .photo {
+    position: relative; margin: 34px 16px 0; height: 138px; border-radius: 22px; background: var(--pistache);
+    padding: 12px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start;
+  }
+  .photo .dish { width: 196px; right: 4px; top: -52px; transform: rotate(-8deg); }
+  .mini {
+    display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 11px; border-radius: 10px;
+    background: var(--tile); border: var(--line); font: 700 12px/1 var(--body);
+  }
+  .mini .ms { font-size: 17px; }
+  .auto { background: var(--ink); color: var(--pistache); border-color: var(--ink); }
+
+  .title { margin: 20px 16px 0; font-size: 33px; }
+  .caret { display: inline-block; width: 3px; height: 30px; background: var(--brique); vertical-align: -3px; margin-left: 2px; }
+  .desc { margin: 8px 16px 0; font: 500 15px/1.3 var(--body); color: var(--muted); }
+
+  .type { margin: 18px 16px 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .type div {
+    height: 58px; border-radius: 14px; background: var(--tile);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font: 800 15px/1 var(--display); font-variation-settings: "wdth" 112;
+  }
+  .type .on { background: var(--brique); color: var(--brique-ink); transform: translate(-2px, -2px); box-shadow: var(--pop-lg); }
+
+  .props { margin: 16px 16px 0; display: grid; gap: 4px; }
+  .prop { min-height: 40px; display: grid; grid-template-columns: 112px 1fr; align-items: center; }
+  .prop .k { display: flex; align-items: center; gap: 8px; font: 500 14px/1 var(--body); color: var(--muted); }
+  .prop .k .ms { font-size: 20px; }
+  .prop .v { display: flex; gap: 6px; flex-wrap: nowrap; overflow: hidden; }
+  .prop .v .chip.p { background: var(--pistache); }
+  .prop .v .chip.s { background: var(--safran); }
+  .prop .v .add { width: 28px; padding: 0; justify-content: center; border-style: dashed; background: transparent; }
+  .prop .v .plain { font: 600 14px/1 var(--body); }
+
+  .ing { margin: 18px 16px 0; }
+  .ing-head { display: flex; align-items: center; justify-content: space-between; }
+  .ing-head h2 { margin: 0; font-size: 22px; }
+  .stepper { display: flex; align-items: center; border: var(--line); border-radius: 10px; background: var(--tile); }
+  .stepper span { width: 32px; height: 30px; display: grid; place-items: center; }
+  .stepper b { padding: 0 6px; font: 700 13px/1 var(--body); border-inline: var(--line); height: 30px; display: grid; place-items: center; }
+  .rows { margin-top: 10px; display: grid; gap: 2px; }
+  .row { height: 34px; display: grid; grid-template-columns: 22px 78px 1fr; align-items: center; font: 500 15px/1 var(--body); }
+  .row .dot { width: 12px; height: 12px; border: var(--line); border-radius: 3px; }
+  .row b { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .blocks {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
+    padding: 12px 16px 30px; background: var(--paper); border-top: var(--line);
+  }
+  .blocks p { margin: 0 0 10px; font: 600 13px/1 var(--body); color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .blocks p kbd { font: 800 12px/1 var(--display); padding: 3px 6px; border: var(--line); border-radius: 6px; color: var(--ink); }
+  .blocks .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .blk {
+    height: 70px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+    font: 700 12px/1 var(--body);
+  }
+  .blk .ms { font-size: 26px; }
+  .b1 { background: var(--pistache); } .b2 { background: var(--safran); } .b3 { background: var(--tile); } .b4 { background: var(--brique); color: var(--brique-ink); }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <header class="bar">
+    <span class="sq brut"><i class="ms">close</i></span>
+    <span class="label">Nouvelle recette</span>
+    <span class="save">Enregistrer</span>
+  </header>
+
+  <section class="photo brut">
+    <span class="mini"><i class="ms">photo_camera</i>Changer</span>
+    <span class="mini auto"><i class="ms fill">auto_awesome</i>Plat détouré</span>
+    <img class="dish" src="../assets/food/pot_of_food.png" alt="">
+  </section>
+
+  <h1 class="title display">Dahl corail coco<span class="caret"></span></h1>
+  <p class="desc">Le dahl de Léa, en plus épicé</p>
+
+  <div class="type">
+    <div class="brut">Entrée</div>
+    <div class="brut on"><i class="ms fill">check_circle</i>Plat</div>
+    <div class="brut">Dessert</div>
+  </div>
+
+  <div class="props">
+    <div class="prop"><span class="k"><i class="ms">eco</i>Régime</span><span class="v"><span class="chip p">Vegan</span><span class="chip p">Sans gluten</span><span class="chip add"><i class="ms">add</i></span></span></div>
+    <div class="prop"><span class="k"><i class="ms">soup_kitchen</i>Ustensiles</span><span class="v"><span class="chip s">Cocotte</span><span class="chip s">Mixeur</span><span class="chip add"><i class="ms">add</i></span></span></div>
+    <div class="prop"><span class="k"><i class="ms">timer</i>Temps</span><span class="v"><span class="plain">35 min</span></span></div>
+    <div class="prop"><span class="k"><i class="ms">folder</i>Dossier</span><span class="v"><span class="chip">Soirs de semaine</span></span></div>
+  </div>
+
+  <section class="ing">
+    <div class="ing-head">
+      <h2 class="display">Ingrédients</h2>
+      <div class="stepper"><span><i class="ms">remove</i></span><b>4 pers.</b><span><i class="ms">add</i></span></div>
+    </div>
+    <div class="rows">
+      <div class="row"><span class="dot"></span><b>200 g</b>lentilles corail</div>
+      <div class="row"><span class="dot"></span><b>40 cl</b>lait de coco</div>
+      <div class="row"><span class="dot"></span><b>1</b>oignon jaune</div>
+    </div>
+  </section>
+
+  <footer class="blocks">
+    <p>Ajouter un bloc, ou tape <kbd>/</kbd></p>
+    <div class="grid">
+      <div class="blk b1 brut"><i class="ms">grocery</i>Ingrédient</div>
+      <div class="blk b2 brut"><i class="ms">format_list_numbered</i>Étape</div>
+      <div class="blk b3 brut"><i class="ms">sticky_note_2</i>Note</div>
+      <div class="blk b4 brut"><i class="ms">add_a_photo</i>Photo</div>
+    </div>
+  </footer>
+  <div class="gesture"></div>
+</body>
+</html>

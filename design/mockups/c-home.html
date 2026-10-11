@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>C · Accueil — Émail</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="email.css">
+<style>
+  .top { height: 54px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
+  .wm { font: 800 23px/1 var(--display); font-variation-settings: "wdth" 85, "opsz" 48; letter-spacing: -.03em; }
+  .wm i { font-style: normal; color: var(--speck); }
+  .av { width: 38px; height: 38px; border-radius: 50%; background: var(--butter); display: grid; place-items: center; font: 700 15px/1 var(--body); }
+
+  h1 { margin: 6px 16px 0; font-size: 46px; text-wrap: balance; }
+
+  .search {
+    margin: 18px 16px 0; height: 58px; border-radius: 29px; border: 2px solid var(--enamel);
+    display: flex; align-items: center; gap: 10px; padding: 0 8px 0 18px; font: 500 15px/1 var(--body); color: var(--muted);
+  }
+  .search .f { margin-left: auto; height: 42px; padding: 0 14px; border-radius: 21px; display: inline-flex; align-items: center; gap: 6px; font: 600 14px/1 var(--body); }
+  .search .f b { width: 20px; height: 20px; border-radius: 50%; background: var(--butter); color: var(--enamel); display: grid; place-items: center; font-size: 11px; }
+
+  .lab { margin: 26px 16px 0; display: flex; justify-content: space-between; font: 600 14px/1 var(--body); }
+  .lab span:last-child { color: var(--muted); }
+
+  .rail { margin-top: 56px; padding: 0 16px; display: flex; gap: 14px; }
+  .card { position: relative; flex: 0 0 156px; height: 176px; border-radius: 30px; padding: 16px; display: flex; align-items: flex-end; }
+  .card b { font: 700 18px/1.05 var(--display); font-variation-settings: "wdth" 85, "opsz" 24; }
+  .card .dish { width: 128px; left: 14px; top: -54px; }
+  .c1 { background: var(--butter); } .c2 { background: var(--mist); }
+
+  /* the progressive filter sheet */
+  .scrim { position: absolute; inset: 0; background: rgba(29, 46, 107, .38); z-index: 30; }
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 35; height: 452px;
+    background: var(--white); border-radius: 32px 32px 0 0; padding: 10px 16px 30px;
+  }
+  .handle { width: 36px; height: 4px; border-radius: 2px; background: var(--muted); opacity: .4; margin: 0 auto 14px; }
+  .sh { display: flex; justify-content: space-between; align-items: baseline; }
+  .sh h2 { margin: 0; font-size: 30px; }
+  .sh span { font: 600 14px/1 var(--body); text-decoration: underline; text-underline-offset: 3px; }
+
+  .tray { margin-top: 14px; border-radius: 22px; padding: 12px; }
+  .tray .t { display: flex; align-items: center; gap: 8px; font: 600 14px/1.2 var(--body); margin-bottom: 10px; }
+  .tray .t em { font-style: normal; font: 800 11px/1 var(--display); letter-spacing: .06em; padding: 4px 7px; border-radius: 6px; }
+  .tray .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .and { background: var(--mist); }
+  .and .t em { background: var(--enamel); color: var(--white); }
+  .or { border: 2px dashed var(--enamel); }
+  .or .t em { background: var(--butter); }
+
+  .chip { height: 38px; padding: 0 8px 0 14px; border-radius: 19px; display: inline-flex; align-items: center; gap: 4px; font: 600 14px/1 var(--body); }
+  .chip .ms { font-size: 18px; opacity: .8; }
+  .chip.navy { background: var(--enamel); color: var(--white); }
+  .chip.butter { background: var(--butter); }
+  .chip.out { border: 1.5px solid var(--enamel); padding: 0 14px 0 10px; background: var(--white); }
+  .chip.ghost { border: 1.5px dashed var(--muted); color: var(--muted); padding: 0 14px 0 10px; }
+
+  .sugg { margin-top: 16px; }
+  .sugg .tabs { display: flex; gap: 18px; font: 600 14px/1 var(--body); color: var(--muted); margin-bottom: 10px; }
+  .sugg .tabs .on { color: var(--enamel); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .sugg .chips { display: flex; gap: 8px; overflow: hidden; }
+
+  .go { position: absolute; left: 16px; right: 16px; bottom: 30px; height: 58px; border-radius: 29px; display: grid; place-items: center; font: 700 17px/1 var(--body); }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <header class="top"><span class="wm">wez<i>food</i></span><span class="av">E</span></header>
+  <h1 class="display">Qu'est-ce qu'on mange ce soir ?</h1>
+  <div class="search"><i class="ms">search</i>Chercher<span class="f speckled"><i class="ms">tune</i>Filtres<b>4</b></span></div>
+
+  <div class="lab"><span>Derniers ajouts</span><span>Tout voir</span></div>
+  <div class="rail">
+    <div class="card c1"><img class="dish" src="../assets/food/shallow_pan_of_food.png" alt=""><b>Shakshuka du dimanche</b></div>
+    <div class="card c2"><img class="dish" src="../assets/food/pot_of_food.png" alt=""><b>Dahl corail coco</b></div>
+    <div class="card speckled"><img class="dish" src="../assets/food/green_salad.png" alt=""><b>Salade grecque</b></div>
+  </div>
+
+  <div class="scrim"></div>
+  <section class="sheet">
+    <div class="handle"></div>
+    <div class="sh"><h2 class="display">Filtrer</h2><span>Tout effacer</span></div>
+
+    <div class="tray and">
+      <div class="t"><em>ET</em>Toutes ces conditions</div>
+      <div class="chips">
+        <span class="chip navy">Plat<i class="ms">close</i></span>
+        <span class="chip navy">Végé<i class="ms">close</i></span>
+      </div>
+    </div>
+
+    <div class="tray or">
+      <div class="t"><em>OU</em>Au moins une de celles-ci</div>
+      <div class="chips">
+        <span class="chip butter">Cocotte<i class="ms">close</i></span>
+        <span class="chip butter">Poêle<i class="ms">close</i></span>
+        <span class="chip ghost"><i class="ms">add</i>Ajouter</span>
+      </div>
+    </div>
+
+    <div class="sugg">
+      <div class="tabs"><span>Type</span><span>Régime</span><span class="on">Ustensiles</span><span>Ingrédients</span></div>
+      <div class="chips">
+        <span class="chip out"><i class="ms">add</i>Four</span>
+        <span class="chip out"><i class="ms">add</i>Mixeur</span>
+        <span class="chip out"><i class="ms">add</i>Wok</span>
+        <span class="chip out"><i class="ms">add</i>Robot</span>
+      </div>
+    </div>
+
+    <div class="go speckled">Voir 12 recettes</div>
+  </section>
+  <div class="gesture"></div>
+</body>
+</html>

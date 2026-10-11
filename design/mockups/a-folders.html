@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>A · Dossiers — Marché</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="marche.css">
+<style>
+  .head { padding: 14px 16px 0; display: flex; align-items: flex-end; justify-content: space-between; }
+  .head h1 { margin: 0; font-size: 44px; }
+  .head p { margin: 8px 0 0; font: 500 14px/1.3 var(--body); color: var(--muted); }
+  .new {
+    height: 44px; padding: 0 14px 0 10px; border-radius: 14px; background: var(--pistache);
+    display: inline-flex; align-items: center; gap: 4px; font: 700 14px/1 var(--body);
+  }
+
+  .bento {
+    margin: 48px 16px 0;
+    display: grid; gap: 30px 14px;
+    grid-template-columns: 1.1fr .9fr;
+    grid-template-rows: 156px 132px 132px 112px;
+    grid-template-areas: "a a" "b c" "b d" "e f";
+  }
+  .folder { position: relative; border-radius: 4px 20px 20px 20px; padding: 16px 14px 14px; display: flex; flex-direction: column; }
+  /* the folder tab */
+  .folder::before {
+    content: ""; position: absolute; left: -2px; top: -16px; width: 78px; height: 18px;
+    background: inherit; border: var(--line); border-bottom: 0; border-radius: 10px 14px 0 0;
+  }
+  .folder h2 { margin: 0; font-size: 21px; text-wrap: balance; position: relative; z-index: 2; }
+  .folder .n { margin-top: auto; font: 600 13px/1 var(--body); display: flex; align-items: center; gap: 6px; position: relative; z-index: 2; }
+  .folder .n b { font: 800 22px/1 var(--display); font-variation-settings: "wdth" 125; }
+
+  /* hide the tile's top border under the tab so tab and tile read as one shape */
+  .folder::after { content: ""; position: absolute; left: 0; top: -2px; width: 74px; height: 4px; background: inherit; }
+  .f-f::after { display: none; }
+  .f-a { grid-area: a; background: var(--safran); z-index: 1; }
+  .f-a h2 { font-size: 30px; max-width: 55%; }
+  .f-a .d1 { width: 96px; right: 104px; top: -50px; transform: rotate(-16deg); }
+  .f-a .d2 { width: 108px; right: 4px; top: -70px; transform: rotate(10deg); }
+  .f-a .d3 { width: 132px; right: 26px; bottom: -6px; transform: rotate(-6deg); }
+
+  .f-b { grid-area: b; background: var(--brique); color: var(--brique-ink); z-index: 2; }
+  .f-b .d1 { width: 132px; left: 12px; bottom: 42px; transform: rotate(-8deg); }
+  .f-b .d2 { width: 92px; right: -20px; bottom: 112px; transform: rotate(12deg); }
+
+  .f-c { grid-area: c; background: var(--pistache); z-index: 3; }
+  .f-c .d1 { width: 82px; right: -16px; top: -38px; transform: rotate(10deg); }
+
+  .f-d { grid-area: d; background: var(--tile); z-index: 4; }
+  .f-d .d1 { width: 74px; right: -14px; top: -62px; transform: rotate(-12deg); }
+  .f-d .d2 { width: 50px; right: 50px; top: -52px; transform: rotate(14deg); }
+
+  .f-e { grid-area: e; background: var(--ink); color: var(--paper); z-index: 5; }
+  .f-e .d1 { width: 92px; right: -14px; top: -34px; transform: rotate(8deg); }
+
+  .f-f {
+    grid-area: f; z-index: 5; box-shadow: none; border: 2px dashed var(--ink); background: transparent;
+    align-items: center; justify-content: center; gap: 6px; font: 700 14px/1.2 var(--body); text-align: center;
+  }
+  .f-f::before { border-style: dashed; background: var(--paper); }
+  .f-f .ms { font-size: 30px; }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <header class="head">
+    <div>
+      <h1 class="display">Dossiers</h1>
+      <p>6 dossiers rangés à la main</p>
+    </div>
+    <span class="new brut"><i class="ms">add</i>Nouveau</span>
+  </header>
+
+  <main class="bento">
+    <article class="folder f-a brut">
+      <h2 class="display">Soirs de semaine</h2>
+      <div class="n"><b>14</b>recettes</div>
+      <img class="dish d1" src="../assets/food/curry_rice.png" alt="">
+      <img class="dish d2" src="../assets/food/steaming_bowl.png" alt="">
+      <img class="dish d3" src="../assets/food/spaghetti.png" alt="">
+    </article>
+
+    <article class="folder f-b brut">
+      <h2 class="display">Recettes de Mamie</h2>
+      <div class="n"><b>9</b>recettes</div>
+      <img class="dish d1" src="../assets/food/pie.png" alt="">
+      <img class="dish d2" src="../assets/food/custard.png" alt="">
+    </article>
+
+    <article class="folder f-c brut">
+      <h2 class="display">Pour recevoir</h2>
+      <div class="n"><b>11</b>recettes</div>
+      <img class="dish d1" src="../assets/food/fondue.png" alt="">
+    </article>
+
+    <article class="folder f-d brut">
+      <h2 class="display">Desserts de crise</h2>
+      <div class="n"><b>7</b>recettes</div>
+      <img class="dish d1" src="../assets/food/doughnut.png" alt="">
+      <img class="dish d2" src="../assets/food/cookie.png" alt="">
+    </article>
+
+    <article class="folder f-e brut">
+      <h2 class="display">Batch cooking</h2>
+      <div class="n"><b>18</b>recettes</div>
+      <img class="dish d1" src="../assets/food/bento_box.png" alt="">
+    </article>
+
+    <article class="folder f-f">
+      <i class="ms">create_new_folder</i>Nouveau dossier
+    </article>
+  </main>
+
+  <nav class="navbar">
+    <div class="tab"><span class="pill"><i class="ms">home</i></span>Accueil</div>
+    <div class="create"><i class="ms">add</i></div>
+    <div class="tab on"><span class="pill"><i class="ms">folder</i></span>Dossiers</div>
+  </nav>
+  <div class="gesture"></div>
+</body>
+</html>

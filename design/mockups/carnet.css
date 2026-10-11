@@ -1,0 +1,41 @@
+/* Direction B — Carnet.
+   Editorial: a food magazine you edit yourself. Oversized contrasty serif,
+   pure black ink, skewed colour blocks, dishes bleeding off the page. */
+@import url("https://fonts.googleapis.com/css2?family=Gloock&family=Schibsted+Grotesk:wght@400..800&display=block");
+
+:root {
+  --paper: #FAFAF8;
+  --ink: #000000;
+  --crevette: #F2B5A0;  /* shrimp pink */
+  --olive: #A5A83C;
+  --olive-deep: #4F5214;
+  --muted: #6D6B66;
+
+  --serif: "Gloock", "Bodoni 72", Didot, Georgia, serif;
+  --sans: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+}
+
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); }
+.serif { font-family: var(--serif); font-weight: 400; letter-spacing: -.02em; }
+.dish { filter: saturate(.78) contrast(1.05) drop-shadow(0 16px 14px rgba(0, 0, 0, .28)); }
+
+.tag {
+  display: inline-flex; align-items: center; height: 26px; padding: 0 10px;
+  border: 1.5px solid var(--ink); font: 600 12px/1 var(--sans);
+}
+
+/* Editorial bottom bar */
+.navbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40; height: 90px;
+  background: var(--ink); color: var(--paper);
+  padding: 0 22px 22px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+}
+.navbar .tab { font: 600 15px/1 var(--sans); opacity: .6; }
+.navbar .tab:last-child { justify-self: end; }
+.navbar .tab.on { opacity: 1; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 7px; text-decoration-color: var(--crevette); }
+.navbar .create {
+  height: 52px; padding: 0 22px 0 16px; background: var(--crevette); color: var(--ink);
+  display: inline-flex; align-items: center; gap: 6px; font: 400 22px/1 var(--serif);
+  transform: rotate(-3deg);
+}
+.navbar .create .ms { font-size: 24px; font-variation-settings: "wght" 700; }

@@ -1,0 +1,60 @@
+/* Shared Android device chrome for every mockup: 412 x 915 dp canvas,
+   status bar (36dp) and gesture handle. Each direction styles the rest. */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,0&display=block");
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  width: 412px;
+  height: 915px;
+  overflow: hidden;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.ms {
+  font-family: "Material Symbols Rounded";
+  font-weight: 500;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  font-feature-settings: "liga";
+  font-variation-settings: "FILL" 0, "wght" 500, "opsz" 24;
+  display: inline-block;
+}
+.ms.fill { font-variation-settings: "FILL" 1, "wght" 500, "opsz" 24; }
+
+.status {
+  position: relative;
+  z-index: 50;
+  height: 36px;
+  padding: 0 20px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+.status .icons { display: flex; gap: 4px; align-items: center; }
+.status .icons .ms { font-size: 17px; font-variation-settings: "FILL" 1, "wght" 600, "opsz" 20; }
+
+.gesture {
+  position: absolute;
+  z-index: 60;
+  bottom: 8px;
+  left: 50%;
+  width: 108px;
+  height: 4px;
+  margin-left: -54px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: .55;
+}
+
+/* A dish object (3D cut-out). Size and position are set per use. */
+.dish { position: absolute; pointer-events: none; image-rendering: auto; }

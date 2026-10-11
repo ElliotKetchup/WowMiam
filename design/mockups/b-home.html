@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>B · Accueil — Carnet</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="carnet.css">
+<style>
+  .mast { margin: 6px 0 0 12px; font-size: 98px; line-height: .82; letter-spacing: -.055em; white-space: nowrap; }
+  .issue { margin: 12px 16px 0; padding-top: 8px; border-top: 4px solid var(--ink); display: flex; justify-content: space-between; font: 600 13px/1 var(--sans); }
+
+  .ask { margin: 22px 16px 0; font-size: 29px; line-height: 1.32; }
+  .ask .w { padding: 0 6px 2px; }
+  .ask .t { background: var(--ink); color: var(--paper); }
+  .ask .d { background: var(--crevette); }
+  .ask .op { font-family: var(--sans); font-size: 17px; font-weight: 700; border-bottom: 2.5px dotted var(--ink); padding: 0 2px; vertical-align: 4px; }
+  .ask .plus { display: inline-grid; place-items: center; width: 30px; height: 30px; border: 1.5px solid var(--ink); border-radius: 50%; vertical-align: 2px; }
+  .ask .plus .ms { font-size: 20px; }
+
+  .sortline { margin: 14px 16px 0; display: flex; justify-content: space-between; align-items: baseline; font: 600 13px/1 var(--sans); }
+  .sortline .tabs { display: flex; gap: 14px; }
+  .sortline .tabs span { color: var(--muted); }
+  .sortline .tabs .on { color: var(--ink); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; }
+
+  .feature { position: relative; margin-top: 46px; height: 230px; }
+  .feature .block { position: absolute; inset: 0 -20px 30px -20px; background: var(--crevette); transform: skewY(-5deg); transform-origin: left; }
+  .feature .kicker { position: absolute; left: 16px; top: 22px; font: 600 13px/1 var(--sans); }
+  .feature .dish { width: 226px; right: -50px; top: -50px; transform: rotate(10deg); }
+  .feature h2 { position: absolute; left: 14px; bottom: -16px; margin: 0; font-size: 52px; line-height: .9; max-width: 372px; }
+  .feature .tags { position: absolute; left: 16px; top: 46px; display: flex; gap: 6px; }
+
+  .index { margin: 44px 16px 0; display: grid; grid-template-columns: 54px 1fr; column-gap: 8px; }
+  .index .L { font: 400 58px/.8 var(--serif); color: var(--olive); padding-top: 4px; }
+  .index ul { list-style: none; margin: 0; padding: 0; border-top: 1.5px solid var(--ink); }
+  .index li { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1.5px solid var(--ink); }
+  .index li b { font: 400 21px/1.1 var(--serif); letter-spacing: -.01em; }
+  .index li span { font: 600 12px/1 var(--sans); color: var(--muted); }
+  .index .gap { height: 14px; grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <div class="mast serif">WezFood</div>
+  <div class="issue"><span>Le carnet d'Elliot</span><span>142 recettes</span></div>
+
+  <p class="ask serif">Je veux un <span class="w t">plat</span> <span class="w d">végé</span> <span class="op">ou</span> <span class="w d">vegan</span> <span class="plus"><i class="ms">add</i></span></p>
+
+  <div class="sortline">
+    <span>24 recettes trouvées</span>
+    <span class="tabs"><span>Récents</span><span class="on">A–Z</span></span>
+  </div>
+
+  <section class="feature">
+    <div class="block"></div>
+    <span class="kicker">Ajoutée hier soir</span>
+    <div class="tags"><span class="tag">Plat</span><span class="tag">Végé</span><span class="tag">25 min</span></div>
+    <img class="dish" src="../assets/food/shallow_pan_of_food.png" alt="">
+    <h2 class="serif">Shakshuka du dimanche</h2>
+  </section>
+
+  <section class="index">
+    <div class="L">D</div>
+    <ul>
+      <li><b>Dahl corail coco</b><span>Vegan</span></li>
+      <li><b>Dolmas maison</b><span>Vegan</span></li>
+    </ul>
+    <div class="gap"></div>
+    <div class="L">F</div>
+    <ul>
+      <li><b>Falafels au four</b><span>Vegan</span></li>
+      <li><b>Frittata aux herbes</b><span>Végé</span></li>
+    </ul>
+  </section>
+
+  <nav class="navbar">
+    <span class="tab on">Accueil</span>
+    <span class="create"><i class="ms">add</i>Créer</span>
+    <span class="tab">Dossiers</span>
+  </nav>
+  <div class="gesture" style="color:#FAFAF8"></div>
+</body>
+</html>

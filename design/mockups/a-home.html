@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>A · Accueil — Marché</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="marche.css">
+<style>
+  .top { height: 58px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
+  .wordmark { font-size: 27px; font-weight: 900; }
+  .wordmark span { display: inline-block; transform: translateY(-2px) rotate(-8deg); color: var(--brique); }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 12px; border: var(--line);
+    background: var(--pistache); display: grid; place-items: center;
+    font: 800 17px/1 var(--display); font-variation-settings: "wdth" 125;
+  }
+
+  .search { margin: 4px 16px 0; display: flex; gap: 10px; }
+  .field {
+    flex: 1; height: 54px; border-radius: 14px; background: var(--tile);
+    display: flex; align-items: center; gap: 10px; padding: 0 14px;
+    font: 500 15px/1 var(--body); color: var(--muted);
+  }
+  .tune {
+    width: 54px; height: 54px; border-radius: 14px; background: var(--safran);
+    display: grid; place-items: center; position: relative;
+  }
+  .badge {
+    position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--brique); color: var(--brique-ink); border: var(--line);
+    font: 800 11px/18px var(--display); text-align: center;
+  }
+
+  .query { margin: 14px 16px 0; display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+  .query .group {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px;
+    border: 2px dashed var(--ink); border-radius: 999px; background: rgba(201, 211, 155, .45);
+  }
+  .query .chip.type { background: var(--brique); color: var(--brique-ink); }
+  .query .chip.diet { background: var(--pistache); }
+  .query .clear { margin-left: auto; width: 30px; height: 30px; border-radius: 50%; border: var(--line); display: grid; place-items: center; background: var(--tile); }
+  .query .clear .ms { font-size: 18px; }
+
+  .section { margin: 20px 16px 0; display: flex; align-items: flex-end; justify-content: space-between; }
+  .section h2 { margin: 0; font-size: 22px; }
+  .seg { display: flex; border: var(--line); border-radius: 10px; overflow: hidden; background: var(--tile); }
+  .seg span { padding: 7px 10px; font: 700 12px/1 var(--body); }
+  .seg span + span { border-left: var(--line); }
+  .seg .on { background: var(--ink); color: var(--paper); }
+
+  .bento {
+    margin: 44px 16px 0;
+    display: grid; gap: 16px 14px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 176px 124px 124px 120px;
+    grid-template-areas: "a a" "b c" "b d" "e e";
+  }
+  .tile { position: relative; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; }
+  .tile h3 { margin: 0; font-size: 19px; text-wrap: balance; }
+  .tile .meta { margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tile .when { font: 600 12px/1 var(--body); opacity: .8; margin-bottom: 8px; }
+
+  .t-a { grid-area: a; background: var(--brique); color: var(--brique-ink); z-index: 1; padding: 16px; }
+  .t-a h3 { font-size: 27px; max-width: 62%; }
+  .t-a .chip { color: var(--brique-ink); }
+  .t-a .dish { width: 188px; right: -22px; top: -58px; transform: rotate(14deg); }
+
+  .t-b { grid-area: b; background: var(--pistache); z-index: 2; overflow: visible; }
+  .t-b .dish { width: 158px; right: -26px; bottom: 34px; transform: rotate(-10deg); }
+
+  .t-c { grid-area: c; background: var(--tile); z-index: 3; }
+  .t-c h3 { max-width: 70%; }
+  .t-c .dish { width: 82px; right: -14px; top: -30px; transform: rotate(16deg); }
+
+  .t-d { grid-area: d; background: var(--safran); z-index: 4; }
+  .t-d h3 { max-width: 58%; }
+  .t-d .dish { width: 92px; right: -22px; top: -44px; transform: rotate(-14deg); }
+
+  .t-e { grid-area: e; background: var(--tile); z-index: 5; }
+  .t-e .dish { width: 120px; right: 20px; top: -40px; transform: rotate(-6deg); }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <header class="top">
+    <div class="wordmark display">Wez<span>F</span>ood</div>
+    <div class="avatar">E</div>
+  </header>
+
+  <div class="search">
+    <div class="field brut"><i class="ms">search</i>Recette, ingrédient, ustensile…</div>
+    <div class="tune brut"><i class="ms">tune</i><span class="badge">3</span></div>
+  </div>
+
+  <div class="query">
+    <span class="chip type"><i class="ms">restaurant</i>Plat</span>
+    <span class="op">ET</span>
+    <span class="group">
+      <span class="chip diet">Végé</span>
+      <span class="op">OU</span>
+      <span class="chip diet">Vegan</span>
+    </span>
+    <span class="clear"><i class="ms">close</i></span>
+  </div>
+
+  <div class="section">
+    <h2 class="display">Derniers ajouts</h2>
+    <div class="seg"><span class="on">Récents</span><span>A–Z</span></div>
+  </div>
+
+  <main class="bento">
+    <article class="tile t-a brut">
+      <div class="when">Ajouté hier soir</div>
+      <h3 class="display">Shakshuka du dimanche</h3>
+      <div class="meta"><span class="chip ghost">Plat</span><span class="chip ghost">Végé</span><span class="chip ghost"><i class="ms">timer</i>25 min</span></div>
+      <img class="dish" src="../assets/food/shallow_pan_of_food.png" alt="">
+    </article>
+
+    <article class="tile t-b brut">
+      <div class="when">Mardi</div>
+      <h3 class="display">Dahl corail coco</h3>
+      <div class="meta"><span class="chip">Plat</span><span class="chip">Vegan</span></div>
+      <img class="dish" src="../assets/food/pot_of_food.png" alt="">
+    </article>
+
+    <article class="tile t-c brut">
+      <h3 class="display">Tarte fine tomates</h3>
+      <div class="meta"><span class="chip">Entrée</span></div>
+      <img class="dish" src="../assets/food/tomato.png" alt="">
+    </article>
+
+    <article class="tile t-d brut">
+      <h3 class="display">Fraisier minute</h3>
+      <div class="meta"><span class="chip">Dessert</span></div>
+      <img class="dish" src="../assets/food/shortcake.png" alt="">
+    </article>
+
+    <article class="tile t-e brut">
+      <h3 class="display">Pâtes alla norma</h3>
+      <img class="dish" src="../assets/food/spaghetti.png" alt="">
+    </article>
+  </main>
+
+  <nav class="navbar">
+    <div class="tab on"><span class="pill"><i class="ms">home</i></span>Accueil</div>
+    <div class="create"><i class="ms">add</i></div>
+    <div class="tab"><span class="pill"><i class="ms">folder</i></span>Dossiers</div>
+  </nav>
+  <div class="gesture"></div>
+</body>
+</html>

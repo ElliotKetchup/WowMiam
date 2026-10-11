@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>C · Dossiers — Émail</title>
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="email.css">
+<style>
+  .head { margin: 12px 16px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .head h1 { margin: 0; font-size: 46px; }
+  .head p { margin: 8px 0 0; font: 500 14px/1.3 var(--body); color: var(--muted); }
+  .new { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--enamel); display: grid; place-items: center; }
+
+  .shelf { margin: 30px 10px 0; display: grid; grid-template-columns: 1fr 1fr; row-gap: 16px; }
+  .folder { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .folder .plate { position: relative; width: 158px; height: 158px; }
+  .folder .dish { width: 108px; left: 50%; top: 50%; margin: -92px 0 0 -54px; }
+  .folder .dish.two { width: 66px; margin: -98px 0 0 12px; transform: rotate(14deg); }
+  .folder b { margin-top: 12px; font: 700 19px/1.1 var(--display); font-variation-settings: "wdth" 88, "opsz" 24; }
+  .folder span { margin-top: 4px; font: 500 13px/1 var(--body); color: var(--muted); }
+
+  /* each folder picks its rim colour by hand */
+  .rim-butter { border-color: var(--butter); }
+  .rim-speck { border-color: var(--speck); }
+  .well-butter { background: var(--butter); box-shadow: inset 0 0 0 12px var(--butter), inset 0 0 0 13.5px rgba(29,46,107,.12), 0 10px 22px rgba(29,46,107,.12); }
+  .plate.speckled { background-color: var(--enamel); }
+  .well-navy.speckled { box-shadow: inset 0 0 0 0 transparent, 0 10px 22px rgba(29,46,107,.18); border-color: var(--enamel); }
+
+  .empty .plate { border: 3px dashed var(--muted); box-shadow: none; display: grid; place-items: center; }
+  .empty .plate .ms { font-size: 36px; color: var(--muted); }
+  .empty b { color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="status"><span>14:32</span><span class="icons"><i class="ms">signal_cellular_alt</i><i class="ms">wifi</i><i class="ms">battery_5_bar</i></span></div>
+
+  <header class="head">
+    <div>
+      <h1 class="display">Mes dossiers</h1>
+      <p>Glisse une recette sur une assiette pour la ranger</p>
+    </div>
+    <span class="new"><i class="ms">add</i></span>
+  </header>
+
+  <main class="shelf">
+    <div class="folder">
+      <div class="plate"><img class="dish" src="../assets/food/curry_rice.png" alt=""><img class="dish two" src="../assets/food/steaming_bowl.png" alt=""></div>
+      <b>Soirs de semaine</b><span>14 recettes</span>
+    </div>
+    <div class="folder">
+      <div class="plate well-butter"><img class="dish" src="../assets/food/pie.png" alt=""></div>
+      <b>Recettes de Mamie</b><span>9 recettes</span>
+    </div>
+    <div class="folder">
+      <div class="plate rim-speck"><img class="dish" src="../assets/food/fondue.png" alt=""></div>
+      <b>Pour recevoir</b><span>11 recettes</span>
+    </div>
+    <div class="folder">
+      <div class="plate speckled well-navy"><img class="dish" src="../assets/food/bento_box.png" alt=""></div>
+      <b>Batch cooking</b><span>18 recettes</span>
+    </div>
+    <div class="folder">
+      <div class="plate rim-butter"><img class="dish" src="../assets/food/doughnut.png" alt=""><img class="dish two" src="../assets/food/cookie.png" alt=""></div>
+      <b>Desserts de crise</b><span>7 recettes</span>
+    </div>
+    <div class="folder empty">
+      <div class="plate"><i class="ms">add</i></div>
+      <b>Nouveau dossier</b><span>&nbsp;</span>
+    </div>
+  </main>
+
+  <nav class="navbar">
+    <div class="tab"><span class="pill"><i class="ms">home</i></span>Accueil</div>
+    <div class="create speckled"><i class="ms">add</i></div>
+    <div class="tab on"><span class="pill"><i class="ms">folder</i></span>Dossiers</div>
+  </nav>
+  <div class="gesture"></div>
+</body>
+</html>
