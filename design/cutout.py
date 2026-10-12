@@ -24,6 +24,7 @@ from PIL import Image
 from rembg import new_session, remove
 
 ASSETS_DIR: Path = Path(__file__).resolve().parent / "assets" / "dishes"
+STICKERS_DIR: Path = Path(__file__).resolve().parent / "assets" / "stickers"
 MAX_SIDE: int = 900
 
 Mask = NDArray[np.uint8]
@@ -61,6 +62,8 @@ DISHES: tuple[DishSpec, ...] = (
         occluders=(Circle(616, 828, 476),),
     ),
     DishSpec("aubergines-pizza", "a29c58ca-image.jpg", "free"),
+    DishSpec("salade-endives", "endives.webp", "ellipse", Circle(951, 753, 653)),
+    DishSpec("pates-carottes", "pates.webp", "free"),
 )
 
 
@@ -124,6 +127,33 @@ def crop_rgba(rgb: NDArray[np.uint8], alpha: Mask, pad: int = 12) -> Image.Image
     return image
 
 
+def sticker(image: Image.Image, border_ratio: float = 0.03) -> Image.Image:
+    """Give a cut-out a white die-cut border with a faint outer edge, like a sticker."""
+    r = max(6, round(max(image.size) * border_ratio))
+    pad = r + 6
+    canvas = Image.new("RGBA", (image.width + 2 * pad, image.height + 2 * pad), (0, 0, 0, 0))
+    canvas.alpha_composite(image, (pad, pad))
+    alpha = np.asarray(canvas.getchannel("A"))
+    solid = (alpha > 110).astype(np.uint8) * 255
+
+    def grow(radius: int) -> Mask:
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * radius + 1, 2 * radius + 1))
+        grown = cv2.dilate(solid, kernel)
+        smooth = cv2.GaussianBlur(grown, (0, 0), radius / 4)
+        return np.clip((smooth.astype(np.float32) - 64) * 2.2, 0, 255).astype(np.uint8)
+
+    paper = grow(r)
+    edge = grow(r + 2)
+    base = np.zeros((*alpha.shape, 4), dtype=np.uint8)
+    base[..., :3] = 214
+    base[..., 3] = (edge.astype(np.float32) * 0.55).astype(np.uint8)
+    white = np.zeros_like(base)
+    white[..., :3] = 255
+    white[..., 3] = paper
+    out = Image.alpha_composite(Image.fromarray(base, "RGBA"), Image.fromarray(white, "RGBA"))
+    return Image.alpha_composite(out, canvas)
+
+
 def cut(spec: DishSpec, photos_dir: Path) -> Path:
     source = photos_dir / spec.source
     rgb = np.asarray(Image.open(source).convert("RGB"), dtype=np.uint8)
@@ -137,13 +167,16 @@ def cut(spec: DishSpec, photos_dir: Path) -> Path:
     else:
         alpha = free_alpha(mask)
     out = ASSETS_DIR / f"{spec.name}.webp"
-    crop_rgba(rgb, alpha).save(out, quality=90, method=6)
+    image = crop_rgba(rgb, alpha)
+    image.save(out, quality=90, method=6)
+    sticker(image).save(STICKERS_DIR / f"{spec.name}.webp", quality=90, method=6)
     return out
 
 
 def main() -> None:
     photos_dir = Path(sys.argv[1])
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    STICKERS_DIR.mkdir(parents=True, exist_ok=True)
     for spec in DISHES:
         print(f"cut {cut(spec, photos_dir).relative_to(ASSETS_DIR.parent.parent)}")
 

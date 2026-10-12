@@ -3,17 +3,17 @@
 
 (() => {
   const STYLES = {
-    a: typeof STYLE_A !== 'undefined' ? STYLE_A : null,
+    a: typeof STYLE_WM !== 'undefined' ? STYLE_WM : (typeof STYLE_A !== 'undefined' ? STYLE_A : null),
     b: typeof STYLE_B !== 'undefined' ? STYLE_B : null,
     c: typeof STYLE_C !== 'undefined' ? STYLE_C : null,
   };
   const HINTS = {
-    a: ['Appuie sur un bouton : il s’enfonce dans son ombre.', 'Touche une tuile : elle s’ouvre en plein écran et la photo suit.', 'Touche « OU » dans les filtres pour le passer en « ET ».', 'Dans une recette : change les portions, coche les ingrédients, lance « Cuisiner ».', 'Le gros + jaune ouvre la création ; essaie d’enregistrer sans nom.'],
+    a: ['Appuie sur un bouton : il s’enfonce dans son ombre.', 'Touche une tuile : elle s’ouvre en plein écran, le sticker suit.', 'Retire « Végé » des filtres pour voir les pâtes apparaître.', 'Touche « OU » dans les filtres pour le passer en « ET ».', 'Dans une recette : change les portions, coche les ingrédients, lance « Cuisiner ».', 'Le gros + rose ouvre la création ; ta photo devient un sticker.'],
     b: ['Touche un mot de la phrase pour le retirer, et « + » pour en ajouter.', 'Touche « ou » pour le changer en « et ».', 'Ouvre la recette à la une : la page se tourne.', 'Mode cuisine : les étapes défilent comme des pages.', '« Créer » ouvre une feuille blanche ; enregistre pour voir le tampon.'],
     c: ['« Filtres » ouvre une feuille : touche une suggestion, elle file dans son groupe.', 'Touche une carte : elle grandit jusqu’à devenir la fiche.', 'Dans la fiche, passe d’Ingrédients à Étapes.', 'Le minuteur du mode cuisine se dessine en cercle.', 'Le + rond se déplie en assistant, une question par écran.'],
   };
   const INTRO = {
-    a: 'Marché : tout est physique et rapide. Touche, ou lance la démo.',
+    a: 'Wow Miam ! Touche l’écran comme sur ton téléphone, ou lance la démo.',
     b: 'Carnet : les écrans se tournent comme des pages. Touche, ou lance la démo.',
     c: 'Émail : des mouvements doux, rien ne surprend. Touche, ou lance la démo.',
   };
@@ -62,7 +62,6 @@
     hints.innerHTML = HINTS[key].map((t) => `<li>${t}</li>`).join('');
     say(INTRO[key]);
     demoState(false);
-    try { localStorage.setItem('wezfood-style', key); } catch (e) { /* storage unavailable */ }
   }
 
   tabs.forEach((t) => {
@@ -77,10 +76,12 @@
   window.addEventListener('resize', fit);
 
   let first = 'a';
-  try { first = localStorage.getItem('wezfood-style') || 'a'; } catch (e) { /* storage unavailable */ }
   const requested = (location.hash || '').replace('#', '');
   if (STYLES[requested]) first = requested;
   mount(STYLES[first] ? first : 'a');
+  if (typeof WM_LOGO !== 'undefined') {
+    ['logo', 'logo-launcher', 'logo-round'].forEach((id) => { const slot = document.getElementById(id); if (slot) slot.innerHTML = WM_LOGO; });
+  }
 
   /* mockup lightbox */
   const lb = document.getElementById('lb');

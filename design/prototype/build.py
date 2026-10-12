@@ -16,10 +16,10 @@ from PIL import Image
 HERE: Path = Path(__file__).resolve().parent
 DESIGN: Path = HERE.parent
 DIST: Path = HERE / "dist"
-OUTPUT_NAME: str = "wezfood-maquettes.html"
+OUTPUT_NAME: str = "wowmiam.html"
 
-CSS_FILES: tuple[str, ...] = ("page.css", "device.css", "a.css", "b.css", "c.css")
-JS_FILES: tuple[str, ...] = ("engine.js", "a.js", "b.js", "c.js", "page.js")
+CSS_FILES: tuple[str, ...] = ("page.css", "device.css", "wm.css")
+JS_FILES: tuple[str, ...] = ("engine.js", "wm.js", "page.js")
 ICON_PATTERN = re.compile(r'class=\\?"ms[^"\\]*\\?">([a-z0-9_]+)<')
 ICON_FONT = (
     "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:"
@@ -46,8 +46,13 @@ def copy_images() -> int:
     for src in (DESIGN / "assets" / "dishes").glob("*.webp"):
         shutil.copy2(src, img / "dishes" / src.name)
         count += 1
-    for src in (DESIGN / "exports").glob("*.png"):
-        Image.open(src).convert("RGB").save(img / f"{src.stem}.webp", quality=88, method=6)
+    (img / "stickers").mkdir(exist_ok=True)
+    for src in (DESIGN / "assets" / "stickers").glob("*.webp"):
+        shutil.copy2(src, img / "stickers" / src.name)
+        count += 1
+    (img / "screens").mkdir(exist_ok=True)
+    for src in (DESIGN / "screens").glob("*.png"):
+        Image.open(src).convert("RGB").save(img / "screens" / f"{src.stem}.webp", quality=86, method=6)
         count += 1
     return count
 

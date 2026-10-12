@@ -27,7 +27,7 @@
 .screen .sbar {
   position: absolute; top: 0; left: 0; right: 0; height: 36px; z-index: 50; pointer-events: none;
   padding: 0 20px 0 24px; display: flex; align-items: center; justify-content: space-between;
-  font: 600 14px/1 "Instrument Sans", system-ui, sans-serif; letter-spacing: .01em;
+  font: 600 14px/1 "Onest", system-ui, sans-serif; letter-spacing: .01em;
   color: var(--status, #1b1b1f); transition: color .3s;
 }
 .screen .sbar .icons { display: flex; gap: 4px; }

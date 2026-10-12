@@ -1,23 +1,19 @@
-<title>WezFood maquettes</title>
+<title>Wow Miam !</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Instrument+Sans:wdth,wght@75..100,400..700&family=Gloock&family=Schibsted+Grotesk:wght@400..800&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Onest:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Onest:wght@400..700&display=swap">
 <link rel="stylesheet" href="__ICON_FONT_URL__">
 <style>
 /*__CSS__*/
 </style>
 
 <div class="wrap">
-  <header>
-    <h1>WezFood</h1>
-    <p>Trois directions, à essayer comme une vraie app : touche, fais défiler, ouvre une recette, crée-en une. Ou lance la démo pour voir les transitions jouer toutes seules.</p>
+  <header class="hero">
+    <div class="logo" id="logo" aria-hidden="true"></div>
+    <h1>Wow Miam<span>!</span></h1>
   </header>
+  <p class="lede">La direction A, passée aux couleurs bijou, avec tes plats en stickers. Essaie l’app comme sur ton téléphone : ouvre une recette, filtre, cuisine, crée-en une. Ou lance la démo pour voir les animations jouer toutes seules.</p>
 
-  <section class="proto" id="prototypes" aria-label="Prototypes interactifs">
-    <div class="switch" role="tablist">
-      <button type="button" role="tab" data-style="a"><span class="key ka">A</span><span>Marché<small>Néo-brutal, bento</small></span></button>
-      <button type="button" role="tab" data-style="b"><span class="key kb">B</span><span>Carnet<small>Éditorial</small></span></button>
-      <button type="button" role="tab" data-style="c"><span class="key kc">C</span><span>Émail<small>Minimal, progressif</small></span></button>
-    </div>
+  <section class="proto" id="prototype" aria-label="Prototype interactif">
     <div class="stage">
       <div class="controls">
         <button type="button" id="play" class="primary"><span aria-hidden="true">▶</span> Regarder la démo</button>
@@ -29,51 +25,52 @@
     </div>
   </section>
 
-  <h2 class="part">Maquettes fixes</h2>
+  <h2 class="part">Les écrans</h2>
+  <p>Chaque écran du prototype, figé. Fais défiler sur le côté, touche pour agrandir.</p>
+  <div class="rail">
+    <figure><button type="button" data-full="img/screens/1-accueil.webp" data-label="Accueil"><img src="img/screens/1-accueil.webp" alt="Accueil" loading="lazy"></button>
+      <figcaption><b>Accueil</b><span>Les derniers ajouts en tuiles colorées, chaque plat collé en sticker qui déborde du cadre.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/2-filtres.webp" data-label="Filtres"><img src="img/screens/2-filtres.webp" alt="Filtres ouverts" loading="lazy"></button>
+      <figcaption><b>Filtres</b><span>Type, régime, ustensiles. Les critères d’un même groupe se combinent en OU, les groupes entre eux en ET.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/3-recette.webp" data-label="Fiche recette"><img src="img/screens/3-recette.webp" alt="Fiche recette" loading="lazy"></button>
+      <figcaption><b>Fiche recette</b><span>Portions recalculées, ingrédients à cocher, étapes, et un gros bouton pour cuisiner.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/4-cuisine.webp" data-label="Mode cuisine"><img src="img/screens/4-cuisine.webp" alt="Mode cuisine avec minuteur" loading="lazy"></button>
+      <figcaption><b>Mode cuisine</b><span>Une étape à la fois, lisible de loin, avec un minuteur quand l’étape en a besoin.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/5-dossiers.webp" data-label="Dossiers"><img src="img/screens/5-dossiers.webp" alt="Dossiers" loading="lazy"></button>
+      <figcaption><b>Dossiers</b><span>De vraies chemises avec onglet, rangées à la main.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/6-dossier.webp" data-label="Un dossier"><img src="img/screens/6-dossier.webp" alt="Dossier ouvert" loading="lazy"></button>
+      <figcaption><b>Un dossier ouvert</b><span>Ses recettes en liste, chacune avec son sticker.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/7-creation.webp" data-label="Création"><img src="img/screens/7-creation.webp" alt="Création d'une recette" loading="lazy"></button>
+      <figcaption><b>Création</b><span>Ta photo devient un sticker, puis tu remplis les blocs comme dans Notion.</span></figcaption></figure>
+    <figure><button type="button" data-full="img/screens/8-enregistre.webp" data-label="Recette enregistrée"><img src="img/screens/8-enregistre.webp" alt="Accueil après l'enregistrement" loading="lazy"></button>
+      <figcaption><b>Enregistrée</b><span>La nouvelle recette est collée en tête de l’accueil.</span></figcaption></figure>
+  </div>
 
-  <section class="shots" id="accueil">
-    <h3>Accueil</h3>
-    <p>Derniers ajouts, tri A–Z, recherche combinée ET / OU.</p>
-    <div class="rail">
-      <figure><button type="button" data-full="img/a-home.webp" data-label="A · Marché · Accueil"><img src="img/a-home.webp" alt="Accueil, version Marché" loading="lazy"></button>
-        <figcaption><b><i class="ka"></i>A · Marché</b><span>Le dernier ajout prend la grande tuile, les plats débordent du cadre. Les filtres sont des chips reliées par ET / OU ; le groupe en pointillés joue le rôle des parenthèses.</span></figcaption></figure>
-      <figure><button type="button" data-full="img/b-home.webp" data-label="B · Carnet · Accueil"><img src="img/b-home.webp" alt="Accueil, version Carnet" loading="lazy"></button>
-        <figcaption><b><i class="kb"></i>B · Carnet</b><span>Une couverture de magazine. La recherche s'écrit comme une phrase : « Je veux du végé, en entrée ou en plat ». Le tri A–Z devient un index avec lettrines.</span></figcaption></figure>
-      <figure><button type="button" data-full="img/c-home.webp" data-label="C · Émail · Accueil"><img src="img/c-home.webp" alt="Accueil, version Émail, filtres ouverts" loading="lazy"></button>
-        <figcaption><b><i class="kc"></i>C · Émail</b><span>Calme d'abord, détails ensuite. Les filtres vivent dans une feuille qui se déplie.</span></figcaption></figure>
+  <h2 class="part">Logo et couleurs</h2>
+  <p>Le W et le M sont le même dessin retourné, comme deux stickers collés l’un sous l’autre. Les couleurs viennent des tons bijou de ta référence.</p>
+  <div class="brandrow">
+    <div class="launcher" aria-label="Icône sur l’écran d’accueil Android">
+      <figure class="other"><div></div>Photos</figure>
+      <figure><div class="sq" id="logo-launcher"></div>Wow Miam</figure>
+      <figure><div id="logo-round"></div>Icône ronde</figure>
+      <figure class="other"><div></div>Agenda</figure>
     </div>
-  </section>
-
-  <section class="shots" id="dossiers">
-    <h3>Dossiers</h3>
-    <p>Rangés à la main, et beaux.</p>
-    <div class="rail">
-      <figure><button type="button" data-full="img/a-folders.webp" data-label="A · Marché · Dossiers"><img src="img/a-folders.webp" alt="Dossiers, version Marché" loading="lazy"></button>
-        <figcaption><b><i class="ka"></i>A · Marché</b><span>De vrais dossiers : chaque tuile a son onglet.</span></figcaption></figure>
-      <figure><button type="button" data-full="img/b-folders.webp" data-label="B · Carnet · Dossiers"><img src="img/b-folders.webp" alt="Dossiers, version Carnet" loading="lazy"></button>
-        <figcaption><b><i class="kb"></i>B · Carnet</b><span>Les dossiers favoris deviennent des couvertures, les autres un sommaire.</span></figcaption></figure>
-      <figure><button type="button" data-full="img/c-folders.webp" data-label="C · Émail · Dossiers"><img src="img/c-folders.webp" alt="Dossiers, version Émail" loading="lazy"></button>
-        <figcaption><b><i class="kc"></i>C · Émail</b><span>Chaque dossier est une assiette émaillée dont tu choisis la couleur du bord.</span></figcaption></figure>
+    <div class="swatches">
+      <div class="swatch"><i style="background:#D63B88"></i><span>Rose<small>#D63B88</small></span></div>
+      <div class="swatch"><i style="background:#007D72"></i><span>Sarcelle<small>#007D72</small></span></div>
+      <div class="swatch"><i style="background:#E0962A"></i><span>Ambre<small>#E0962A</small></span></div>
+      <div class="swatch"><i style="background:#E55B3C"></i><span>Corail<small>#E55B3C</small></span></div>
+      <div class="swatch"><i style="background:#8B4279"></i><span>Prune<small>#8B4279</small></span></div>
+      <div class="swatch"><i style="background:#8FA14B"></i><span>Olive<small>#8FA14B</small></span></div>
+      <div class="swatch"><i style="background:#3A4570"></i><span>Marine<small>#3A4570</small></span></div>
+      <div class="swatch"><i style="background:#5B2B5C"></i><span>Aubergine<small>#5B2B5C</small></span></div>
     </div>
-  </section>
-
-  <section class="shots" id="creation">
-    <h3>Création</h3>
-    <p>À la Notion : simple, coloré, gros boutons.</p>
-    <div class="rail">
-      <figure><button type="button" data-full="img/a-create.webp" data-label="A · Marché · Création"><img src="img/a-create.webp" alt="Création, version Marché" loading="lazy"></button>
-        <figcaption><b><i class="ka"></i>A · Marché</b><span>Une page façon Notion avec des propriétés et une barre de blocs colorés.</span></figcaption></figure>
-      <figure><button type="button" data-full="img/b-create.webp" data-label="B · Carnet · Création"><img src="img/b-create.webp" alt="Création, version Carnet" loading="lazy"></button>
-        <figcaption><b><i class="kb"></i>B · Carnet</b><span>Tu écris ta recette comme un article : titre géant, et des mots à toucher.</span></figcaption></figure>
-      <figure><button type="button" data-full="img/c-create.webp" data-label="C · Émail · Création"><img src="img/c-create.webp" alt="Création, version Émail, étape 3 sur 5" loading="lazy"></button>
-        <figcaption><b><i class="kc"></i>C · Émail</b><span>Une question par écran, des boutons énormes.</span></figcaption></figure>
-    </div>
-  </section>
+  </div>
 
   <aside class="how">
     <h2>Pour me répondre</h2>
-    <p>Mélange librement, par exemple <q>les transitions de A, l'accueil de B, la création de C</q>. Dis aussi ce qui te gêne, même vaguement : « trop lent », « trop rebondissant », « pas assez fun ».</p>
-    <p>Les plats sont tes propres photos, détourées automatiquement. Dans la démo de création, la salade de courgettes part de ta photo brute pour montrer le détourage en direct.</p>
+    <p>Dis ce que tu gardes et ce qui coince : une couleur trop présente, un sticker trop gros, une animation trop longue. Tu peux aussi m’envoyer d’autres photos de plats, elles deviennent des stickers.</p>
+    <p>La police est Bricolage Grotesque pour les titres et Onest pour le texte, comme la version C.</p>
   </aside>
 </div>
 

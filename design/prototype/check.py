@@ -13,7 +13,7 @@ from pathlib import Path
 from playwright.async_api import ConsoleMessage, async_playwright
 
 HERE: Path = Path(__file__).resolve().parent
-PAGE: Path = HERE / "dist" / "wezfood-maquettes.html"
+PAGE: Path = HERE / "dist" / "wowmiam.html"
 SHOTS: Path = HERE / "dist" / "_shots"
 CHROMIUM: str = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
 

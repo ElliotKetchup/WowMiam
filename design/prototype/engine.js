@@ -4,7 +4,8 @@
    demo with a visible finger. Each style supplies templates and choreography. */
 'use strict';
 
-const IMG = (name) => `img/dishes/${name}.webp`;
+const IMG = (name) => `img/stickers/${name}.webp`;
+const RAW = (name) => `img/dishes/${name}.webp`;
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ABORT = Symbol('demo-abort');
 
@@ -19,11 +20,25 @@ const LIBRARY = [
     steps: [['Préchauffe le four à 220 °C.', 0], ['Étale la sauce tomate sur les galettes.', 0], ['Ajoute les champignons émincés, la mozzarella et l’origan.', 0], ['Enfourne jusqu’à ce que les bords dorent.', 9]],
   },
   {
+    id: 'endives', name: 'Salade d’endives aux pommes', img: 'salade-endives', type: 'Entrée', diets: ['Végé', 'Vegan', 'Sans gluten'], tools: ['Saladier'],
+    time: 10, serves: 2, added: 'Jeudi',
+    note: 'Endives croquantes, dés de pomme et vinaigrette à la moutarde de Dijon.',
+    ingredients: [[3, '', 'endives'], [2, '', 'pommes'], [30, 'g', 'cerneaux de noix'], [1, 'c. à s.', 'moutarde de Dijon'], [3, 'c. à s.', 'huile de colza'], [1, 'c. à s.', 'vinaigre de cidre']],
+    steps: [['Émince les endives, retire le cœur amer.', 0], ['Coupe les pommes en dés.', 0], ['Fouette moutarde, vinaigre et huile.', 0], ['Mélange le tout avec les noix juste avant de servir.', 0]],
+  },
+  {
     id: 'aubergines', name: 'Aubergines façon pizza', img: 'aubergines-pizza', type: 'Plat', diets: ['Végé', 'Sans gluten'], tools: ['Four'],
     time: 40, serves: 2, added: 'Mardi',
     note: 'Des aubergines rôties, garnies comme une pizza et servies avec du riz.',
     ingredients: [[1, '', 'grosse aubergine'], [10, 'cl', 'sauce tomate'], [100, 'g', 'tofu fumé'], [80, 'g', 'emmental râpé'], [10, '', 'olives vertes'], [150, 'g', 'riz']],
     steps: [['Coupe l’aubergine en deux dans la longueur et quadrille la chair.', 0], ['Rôtis-la au four à 200 °C avec un filet d’huile.', 20], ['Garnis de sauce tomate, de tofu, d’olives et de fromage.', 0], ['Gratine, puis sers avec le riz.', 10]],
+  },
+  {
+    id: 'pates', name: 'Pâtes, carottes et nuggets', img: 'pates-carottes', type: 'Plat', diets: [], tools: ['Casserole', 'Poêle'],
+    time: 25, serves: 2, added: 'Lundi',
+    note: 'Le plat du midi qui plaît à tout le monde, avec des carottes poêlées à la ciboulette.',
+    ingredients: [[200, 'g', 'fusilli'], [3, '', 'carottes'], [6, '', 'nuggets'], [40, 'g', 'emmental râpé'], [1, 'c. à s.', 'ciboulette']],
+    steps: [['Cuis les pâtes dans l’eau salée.', 10], ['Poêle les carottes en rondelles avec la ciboulette.', 12], ['Dore les nuggets à la poêle.', 0], ['Sers avec le fromage râpé.', 0]],
   },
   {
     id: 'composee', name: 'Salade composée', img: 'salade-verte', type: 'Entrée', diets: ['Végé', 'Sans gluten'], tools: ['Casserole'],
@@ -43,17 +58,17 @@ const NEW_RECIPE = {
 };
 
 const FOLDERS = [
-  { id: 'soirs', name: 'Soirs de semaine', ids: ['pizza', 'aubergines'] },
-  { id: 'salades', name: 'Salades d’été', ids: ['composee'] },
+  { id: 'soirs', name: 'Soirs de semaine', ids: ['pizza', 'pates', 'aubergines'] },
+  { id: 'salades', name: 'Salades d’été', ids: ['endives', 'composee'] },
   { id: 'mamie', name: 'Recettes de Mamie', ids: ['aubergines'] },
-  { id: 'recevoir', name: 'Pour recevoir', ids: ['pizza', 'composee'] },
-  { id: 'batch', name: 'Batch cooking', ids: ['aubergines'] },
+  { id: 'recevoir', name: 'Pour recevoir', ids: ['pizza', 'endives', 'composee'] },
+  { id: 'batch', name: 'Batch cooking', ids: ['pates', 'aubergines'] },
 ];
 
 const CATALOG = {
   type: ['Entrée', 'Plat', 'Dessert'],
   diet: ['Végé', 'Vegan', 'Sans gluten'],
-  tool: ['Four', 'Plaque', 'Poêle', 'Casserole'],
+  tool: ['Four', 'Plaque', 'Poêle', 'Casserole', 'Saladier'],
 };
 const KIND_LABEL = { type: 'Type', diet: 'Régime', tool: 'Ustensiles' };
 
@@ -308,7 +323,7 @@ class Proto {
   /* photo → automatic cut-out, the signature moment of the create flow */
   async cutout(slot, recipe, { badge = 'Plat détouré' } = {}) {
     slot.classList.add('has-photo');
-    const raw = h(`<img class="raw" src="${IMG(recipe.raw)}" alt="">`);
+    const raw = h(`<img class="raw" src="${RAW(recipe.raw)}" alt="">`);
     slot.append(raw);
     await anim(raw, [{ opacity: 0, transform: 'scale(1.06)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 320, easing: 'ease-out' });
     const scan = h('<div class="scan"></div>');
@@ -319,7 +334,7 @@ class Proto {
     slot.append(cut);
     await Promise.all([
       anim(raw, [{ opacity: 1 }, { opacity: 0 }], { duration: 380, fill: 'forwards' }),
-      anim(cut, [{ opacity: 0, transform: 'scale(.9)' }, { opacity: 1, transform: 'scale(1.08)', offset: 0.65 }, { opacity: 1, transform: 'scale(1)' }], { duration: 620, easing: 'cubic-bezier(.2,.9,.3,1)' }),
+      anim(cut, [{ opacity: 0, transform: 'scale(1.35) rotate(9deg)' }, { opacity: 1, transform: 'scale(.94) rotate(-1deg)', offset: 0.55 }, { opacity: 1, transform: 'scale(1)' }], { duration: 560, easing: 'cubic-bezier(.3,0,.4,1)' }),
     ]);
     raw.remove();
     const b = h(`<span class="cut-badge"><i class="ms fill">auto_awesome</i>${badge}</span>`);

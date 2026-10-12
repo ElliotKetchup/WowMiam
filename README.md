@@ -1,8 +1,11 @@
-# WezFood
+# Wow Miam !
 
 A personal recipe vault for Android. You add your own recipes, sort them into folders you make yourself, and find them again with combined filters (diet, dish type, utensils, ingredients; AND / OR).
 
 ## Status
+
+Chosen direction: **A in jewel tones** (`design/prototype/wm.*`): neo-brutal bento, Bricolage Grotesque + Onest, every dish photo turned into a die-cut sticker, W/M logo. Directions B and C stay in the repo for reference.
+
 
 Design exploration. `design/` holds three art directions, each applied to the three screens (Home, Folders, Create):
 
@@ -26,7 +29,8 @@ Dish images are real photos cut out with `design/cutout.py` (IS-Net via rembg, t
 `design/prototype/` holds a tappable prototype of each direction (navigation, filters, recipe sheet, cooking mode, folders, creation with the live cut-out) plus a scripted demo with a visible finger.
 
 ```sh
-python design/prototype/build.py        # -> design/prototype/dist/wezfood-maquettes.html
+python design/prototype/build.py        # -> design/prototype/dist/wowmiam.html
+python design/prototype/capture.py      # stills of each screen -> design/screens/
 python design/prototype/check.py a      # plays style A's demo headless, reports errors, saves frames
 ```
 
