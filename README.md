@@ -34,6 +34,21 @@ python design/prototype/capture.py      # stills of each screen -> design/screen
 python design/prototype/check.py a      # plays style A's demo headless, reports errors, saves frames
 ```
 
+## The app (`app/`)
+
+Expo SDK 57 (React Native, TypeScript), Expo Router, Reanimated, Zustand. Data stays on the phone for now (AsyncStorage); photos are copied into the app's documents folder.
+
+```sh
+cd app
+npm ci
+npx tsc --noEmit                  # typecheck
+npx expo start                    # dev server (Expo Go or a dev build)
+npx expo export --platform web    # static web build in app/dist
+```
+
+Every push to `main` that touches `app/` runs `.github/workflows/android-apk.yml`: it generates the native project, builds a release APK (arm64) and attaches it to a GitHub Release. The latest one is always at
+`https://github.com/ElliotKetchup/WowMiam/releases/latest/download/WowMiam.apk`.
+
 ## Planned stack (subject to change)
 
 - Kotlin + Jetpack Compose, Material 3 as the base layer, fully re-themed
