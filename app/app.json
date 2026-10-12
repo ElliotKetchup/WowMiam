@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "Wow Miam",
+    "slug": "wowmiam",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/brand/icon.png",
+    "scheme": "wowmiam",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4EFF3",
+    "ios": {
+      "bundleIdentifier": "com.elliotketchup.wowmiam",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.elliotketchup.wowmiam",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#007D72",
+        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "monochromeImage": "./assets/brand/adaptive-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/brand/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F4EFF3",
+          "image": "./assets/brand/splash.png",
+          "imageWidth": 120
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Wow Miam a besoin de tes photos pour ajouter l’image d’un plat.",
+          "cameraPermission": "Wow Miam a besoin de l’appareil photo pour photographier tes plats."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false,
+      "reactCompiler": true
+    }
+  }
+}

@@ -1,0 +1,65 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", ".github/workflows/android-apk.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Stamp Android versionCode with the run number
+        run: node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync('app.json','utf8'));j.expo.android.versionCode=Number(process.env.GITHUB_RUN_NUMBER);fs.writeFileSync('app.json',JSON.stringify(j,null,2));"
+
+      - name: Generate native Android project
+        run: npx expo prebuild --platform android --no-install --clean
+
+      - name: Build release APK
+        working-directory: app/android
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk ../WowMiam.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-${{ github.run_number }}
+          name: Wow Miam, build Android ${{ github.run_number }}
+          body: |
+            Ouvre ce lien sur ton téléphone Android, télécharge WowMiam.apk et installe-le.
+            Commit ${{ github.sha }}
+          files: WowMiam.apk
+          make_latest: true
