@@ -335,13 +335,8 @@ function FoldersView({ top }: { top: number }) {
   const open = () => setSheet(true);
   return (
     <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: top + 14, paddingBottom: 140 }}>
-      <View style={{ marginHorizontal: 16, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <View style={{ flex: 1 }}>
-          <Display size={44}>Dossiers</Display>
-          <Txt color={C.muted} style={{ marginTop: 6 }}>
-            {folders.length} dossier{folders.length > 1 ? 's' : ''} rangé{folders.length > 1 ? 's' : ''} à la main
-          </Txt>
-        </View>
+      <View style={{ marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Display size={44} style={{ flex: 1 }}>Dossiers</Display>
         <Brut color={C.amber} radius={14} style={styles.addFolder} onPress={open} accessibilityLabel="Nouveau dossier">
           <Icon name="create-new-folder" />
         </Brut>
@@ -491,7 +486,7 @@ const styles = StyleSheet.create({
   folderTab: { position: 'absolute', left: -2, top: -18, width: 78, height: 18, borderWidth: 2, borderBottomWidth: 0, borderColor: C.ink, borderTopLeftRadius: 10, borderTopRightRadius: 14 },
   folderTabCover: { position: 'absolute', left: 0, top: -2, width: 74, height: 4 },
   nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 10, paddingHorizontal: 28, backgroundColor: C.paper, borderTopWidth: 2, borderColor: C.ink, flexDirection: 'row', alignItems: 'center' },
-  addFolder: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  addFolder: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center' },
   newFolder: { flex: 1, borderRadius: 20, borderTopLeftRadius: 4, borderWidth: 2, borderStyle: 'dashed', borderColor: C.ink, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 14 },
   plusWrap: { marginTop: -40, transform: [{ rotate: '-4deg' }] },
   plus: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center' },
