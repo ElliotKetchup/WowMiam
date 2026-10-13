@@ -1,0 +1,147 @@
+<title>Dossiers pochette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one phone screen of the Dossiers tab, centred; controls sit above it. The screen keeps the app's own (light) palette. */
+:root {
+  --page: #EDE6EC; --page-fg: #2A1530; --page-muted: #6A5C6E;
+  --paper: #F4EFF3; --ink: #2A1530; --muted: #6A5C6E; --tile: #FFFFFF; --on-dark: #FFF6FA;
+  --pink: #D63B88; --teal: #007D72; --amber: #E0962A; --coral: #E55B3C; --plum: #8B4279; --olive: #8FA14B; --navy: #3A4570;
+  --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --body: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --slow: 1;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page: #1C1020; --page-fg: #F4EFF3; --page-muted: #B9AABD; color-scheme: dark } }
+:root[data-theme="dark"] { --page: #1C1020; --page-fg: #F4EFF3; --page-muted: #B9AABD; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--page); color: var(--page-fg); font-family: var(--body); padding: 20px 16px 32px; }
+.wrap { max-width: 440px; margin: 0 auto; display: grid; gap: 14px; }
+.intro h1 { font-family: var(--display); font-size: 26px; line-height: 1.05; margin: 0; letter-spacing: -0.5px; text-wrap: balance }
+.intro p { margin: 6px 0 0; color: var(--page-muted); font-size: 14px; line-height: 1.45 }
+.controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { font: 700 14px var(--body); color: var(--ink); background: var(--tile); border: 2px solid var(--ink); border-radius: 12px; height: 42px; padding: 0 14px; box-shadow: 3px 3px 0 var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink) }
+.btn.primary { background: var(--amber) }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--paper) }
+.btn:focus-visible, .folder:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px }
+
+/* ---- the phone screen ---- */
+.screen { background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 28px; overflow: hidden; padding: 22px 16px 28px; }
+.screen h2 { font-family: var(--display); font-size: 44px; letter-spacing: -1.1px; line-height: 1; margin: 0 }
+.screen .sub { color: var(--muted); font-size: 15px; margin-top: 6px }
+.grid { margin-top: 30px; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); column-gap: 14px; row-gap: 22px; }
+.grid .wide { grid-column: 1 / -1 }
+
+/* A folder is a pocket: back panel (with tab) < stickers < front panel. */
+.folder { position: relative; height: 176px; cursor: pointer; transform-origin: 50% 80%; }
+.folder.wide { height: 200px }
+.back, .front { position: absolute; left: 0; right: 0; border: 2px solid var(--ink); }
+.back { top: 18px; bottom: 0; border-radius: 4px 20px 20px 20px; background: var(--c-back); box-shadow: 4px 4px 0 var(--ink) }
+.back::before { /* the tab */
+  content: ""; position: absolute; left: -2px; top: -18px; width: 82px; height: 18px; background: var(--c-back);
+  border: 2px solid var(--ink); border-bottom: 0; border-radius: 10px 14px 0 0;
+}
+.back::after { content: ""; position: absolute; left: 0; top: -2px; width: 78px; height: 4px; background: var(--c-back) }
+.front { top: var(--lip); bottom: 0; border-radius: 16px 16px 20px 20px; background: var(--c); padding: 12px 14px 14px; display: flex; flex-direction: column; z-index: 3 }
+.name { font-family: var(--display); font-size: 20px; line-height: 1.03; letter-spacing: -0.5px; color: var(--c-fg); text-wrap: balance;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden }
+.folder.wide .name { font-size: 28px; max-width: 70% }
+.count { margin-top: auto; display: flex; align-items: baseline; gap: 6px; color: var(--c-fg); font-weight: 600; font-size: 13px }
+.count b { font-family: var(--display); font-size: 22px; font-weight: 800 }
+
+/* Stickers live between the panels. Above the front's rim they may overhang freely; below it they stay inside the pocket. */
+.folder { --lip: 66px }
+.folder.wide { --lip: 74px }
+.pocket { position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  clip-path: polygon(-200px -200px, calc(100% + 200px) -200px, calc(100% + 200px) var(--lip), 100% var(--lip), 100% calc(100% - 22px), 0 calc(100% - 22px), 0 var(--lip), -200px var(--lip)); }
+.st { position: absolute; width: var(--s); height: var(--s); right: var(--r); top: var(--t); transform: rotate(var(--rot)); }
+.st img { width: 100%; height: 100%; object-fit: contain; display: block; filter: drop-shadow(0 4px 5px rgba(42,21,48,.28)); transform-origin: 50% 190%; }
+
+/* Motion. Folder: barely-there pop. Sticker: rises out of the pocket on an arc (pivot far below it), turning as it goes. */
+@keyframes pop { 0% { opacity: 0; transform: scale(.94) } 65% { opacity: 1; transform: scale(1.012) } 100% { opacity: 1; transform: scale(1) } }
+@keyframes rise {
+  0%   { transform: translateY(105%) rotate(-28deg) }
+  70%  { transform: translateY(-3%) rotate(3deg) }
+  100% { transform: translateY(0) rotate(0deg) }
+}
+.play .folder { animation: pop calc(380ms * var(--slow)) cubic-bezier(.2,.7,.3,1) both; animation-delay: calc(var(--i) * 70ms * var(--slow)) }
+.play .st img { animation: rise calc(620ms * var(--slow)) cubic-bezier(.22,.9,.3,1) both; animation-delay: calc((var(--i) * 70ms + 300ms + var(--k, 0) * 120ms) * var(--slow)) }
+.folder.peek .st img { animation: rise calc(620ms * var(--slow)) cubic-bezier(.22,.9,.3,1) both }
+@media (prefers-reduced-motion: reduce) { .play .folder, .play .st img, .folder.peek .st img { animation: none } }
+
+.note { color: var(--page-muted); font-size: 13px; line-height: 1.45; margin: 0 }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <h1>Les stickers sortent des dossiers</h1>
+    <p>Essai pour l’onglet Dossiers, pas encore dans l’app. Les stickers sont rangés dans la pochette et en sortent en tournant, au lieu de tomber dessus comme sur l’accueil.</p>
+  </header>
+  <div class="controls">
+    <button class="btn primary" id="replay" type="button">↻ Rejouer</button>
+    <button class="btn" id="slow" type="button" aria-pressed="false">Ralenti ×3</button>
+  </div>
+
+  <section class="screen" id="screen" aria-label="Écran Dossiers">
+    <h2>Dossiers</h2>
+    <div class="sub">5 dossiers rangés à la main</div>
+    <div class="grid" id="grid"></div>
+  </section>
+  <p class="note">Touche un dossier pour revoir ses stickers sortir.</p>
+</div>
+
+<script>
+const IMG = __STICKERS__;
+const C = { amber: ['#E0962A', '#B8741A', '#2A1530'], plum: ['#8B4279', '#6C2F5D', '#FFF6FA'], teal: ['#007D72', '#00605A', '#FFF6FA'],
+            coral: ['#E55B3C', '#BE4428', '#2A1530'], navy: ['#3A4570', '#2A3356', '#FFF6FA'] };
+/* size, right, top relative to the folder box; top is where the sticker rests (its lower part stays in the pocket). */
+const FOLDERS = [
+  { name: 'Soirs de semaine', n: 3, c: 'amber', wide: true, st: [['pizza-wrap', 132, 108, -10, -10], ['pates-carottes', 140, -4, -2, 9]] },
+  { name: 'Salades d’été', n: 3, c: 'plum', st: [['salade-endives', 108, -2, 0, 10]] },
+  { name: 'Recettes de Mamie', n: 1, c: 'teal', st: [['aubergines-pizza', 112, -4, -4, -9]] },
+  { name: 'Pour recevoir', n: 2, c: 'coral', st: [['pizza-wrap', 106, 0, 2, 8]] },
+  { name: 'Batch cooking', n: 2, c: 'navy', st: [['salade-courgettes', 108, -2, 0, -8]] },
+];
+
+function folderEl(f, i) {
+  const [c, back, fgc] = C[f.c];
+  const el = document.createElement('div');
+  el.className = 'folder' + (f.wide ? ' wide' : '');
+  el.tabIndex = 0;
+  el.setAttribute('role', 'button');
+  el.setAttribute('aria-label', `${f.name}, ${f.n} recettes`);
+  el.style.cssText = `--i:${i};--c:${c};--c-back:${back};--c-fg:${fgc}`;
+  const stickers = f.st.map(([key, s, r, t, rot], k) =>
+    `<div class="st" style="--s:${s}px;--r:${r}px;--t:${t}px;--rot:${rot}deg;--k:${k}"><img alt="" src="${IMG[key]}"></div>`).join('');
+  el.innerHTML = `<div class="back"></div><div class="pocket">${stickers}</div>
+    <div class="front"><div class="name">${f.name}</div><div class="count"><b>${f.n}</b> recette${f.n > 1 ? 's' : ''}</div></div>`;
+  const peek = () => { el.classList.remove('peek'); void el.offsetWidth; el.classList.add('peek'); };
+  el.addEventListener('click', peek);
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); peek(); } });
+  return el;
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.replaceChildren(...FOLDERS.map(folderEl));
+}
+
+function replay() {
+  const screen = document.getElementById('screen');
+  screen.classList.remove('play');
+  document.querySelectorAll('.folder.peek').forEach((f) => f.classList.remove('peek'));
+  void screen.offsetWidth;
+  screen.classList.add('play');
+}
+
+document.getElementById('replay').addEventListener('click', replay);
+document.getElementById('slow').addEventListener('click', (e) => {
+  const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(on));
+  document.documentElement.style.setProperty('--slow', on ? '3' : '1');
+  replay();
+});
+render();
+requestAnimationFrame(replay);
+</script>
