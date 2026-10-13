@@ -5,7 +5,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FolderSheet, RecipePickerSheet } from '@/components/sheets';
-import { Brut, BrutBox, Chip, Display, Icon, STICKER_LAG, Sticker, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, StatusShade, STICKER_LAG, Sticker, Txt } from '@/components/ui';
 import type { Recipe } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
@@ -37,11 +37,11 @@ export default function FolderScreen() {
         <BrutBox color={C[sw]} radius={24} style={styles.head}>
           <View style={[styles.tab, { backgroundColor: C[sw] }]} />
           <View style={[styles.tabCover, { backgroundColor: C[sw] }]} />
-          <Display size={40} color={fg(sw)} style={{ maxWidth: '68%' }} numberOfLines={4}>{folder.name}</Display>
+          <Display size={36} color={fg(sw)} style={{ maxWidth: cover ? '60%' : '100%' }} numberOfLines={4}>{folder.name}</Display>
           <Txt font="semi" size={14} color={fg(sw)} style={{ marginTop: 10 }}>
             {list.length} recette{list.length > 1 ? 's' : ''}
           </Txt>
-          {cover ? <Sticker key={cover.id} recipe={cover} size={150} rotate={12} style={{ right: -20, top: -52 }} delay={STICKER_LAG} /> : null}
+          {cover ? <Sticker key={cover.id} recipe={cover} size={136} rotate={12} style={{ right: -8, top: -34 }} delay={STICKER_LAG} /> : null}
         </BrutBox>
 
         <View style={{ marginTop: 30, marginHorizontal: 16, gap: 24 }}>
@@ -72,6 +72,7 @@ export default function FolderScreen() {
         </View>
       </ScrollView>
 
+      <StatusShade height={insets.top} />
       <FolderSheet visible={editOpen} onClose={() => setEditOpen(false)} folder={folder} defaultColor={sw} onDeleted={() => router.back()} />
       <RecipePickerSheet visible={pickOpen} onClose={() => setPickOpen(false)} folder={folder} />
     </View>

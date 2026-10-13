@@ -4,10 +4,17 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Chip, Display, Icon, Sticker, tap, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, StatusShade, Sticker, tap, Txt } from '@/components/ui';
 import { addedLabel, formatQty } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
+
+/** Shrinks the hero title so its longest word never breaks mid-word in the ~200 dp left of the sticker. */
+function heroTitleSize(name: string): number {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length));
+  const base = name.length > 22 ? 28 : 34;
+  return Math.max(20, Math.min(base, Math.floor(190 / (longest * 0.62))));
+}
 
 export default function RecipeScreen() {
   const { id, color } = useLocalSearchParams<{ id: string; color?: Swatch }>();
@@ -53,8 +60,8 @@ export default function RecipeScreen() {
 
         <BrutBox color={C[sw]} radius={24} style={styles.hero}>
           <Txt font="semi" size={13} color={fg(sw)} style={{ opacity: 0.85, marginBottom: 6 }}>{addedLabel(recipe.addedAt)}</Txt>
-          <Display size={recipe.name.length > 26 ? 28 : 36} color={fg(sw)} style={{ maxWidth: '64%' }} numberOfLines={5}>{recipe.name}</Display>
-          <Sticker key={recipe.photoUri ?? recipe.sticker} recipe={recipe} size={226} rotate={-12} style={{ right: -30, top: -66 }} delay={260} />
+          <Display size={heroTitleSize(recipe.name)} color={fg(sw)} style={{ maxWidth: '58%' }} numberOfLines={5}>{recipe.name}</Display>
+          <Sticker key={recipe.photoUri ?? recipe.sticker} recipe={recipe} size={186} rotate={-12} style={{ right: -10, top: -40 }} delay={260} />
         </BrutBox>
 
         <Animated.View entering={FadeInDown.delay(80).duration(260)} style={styles.chips}>
@@ -124,6 +131,7 @@ export default function RecipeScreen() {
         ) : null}
       </ScrollView>
 
+      <StatusShade height={insets.top} />
       {recipe.steps.length ? (
         <View style={[styles.cookbar, { paddingBottom: insets.bottom + 16 }]}>
           <Brut color={C.amber} style={styles.cookBtn} onPress={() => router.push({ pathname: '/cook/[id]', params: { id: recipe.id } })}>

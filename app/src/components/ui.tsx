@@ -198,6 +198,11 @@ export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = 
   );
 }
 
+/** Paper band behind the status bar so scrolled content doesn't run under the clock. */
+export function StatusShade({ height }: { height: number }) {
+  return <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, height, backgroundColor: C.paper }} />;
+}
+
 export function Logo({ size = 40 }: { size?: number }) {
   return (
     <View style={{ width: size, height: size, borderRadius: size * 0.26, borderWidth: 2, borderColor: C.ink, boxShadow: hardShadow(2), overflow: 'hidden' }}>
