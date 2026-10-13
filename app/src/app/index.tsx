@@ -1,20 +1,12 @@
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeOut,
-  LinearTransition,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  ZoomIn,
-} from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Chip, Display, Icon, Logo, Sticker, tap, Txt } from '@/components/ui';
-import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel } from '@/lib/data';
+import { FolderSheet } from '@/components/sheets';
+import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, STICKER_LAG, Sticker, tap, Txt } from '@/components/ui';
+import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel, folderSwatch } from '@/lib/data';
 import { activeCount, selectResults, useStore } from '@/lib/store';
 import { C, FOLDER_SWATCHES, type Swatch, TILE_SWATCHES, fg } from '@/lib/theme';
 
@@ -38,13 +30,13 @@ export default function Home() {
   return (
     <View style={{ flex: 1, backgroundColor: C.paper }}>
       {tab === 'home' ? (
-        <Animated.View key="home" entering={FadeInDown.springify().damping(16)} style={{ flex: 1 }}>
+        <View key="home" style={{ flex: 1 }}>
           <HomeView top={insets.top} onOpenFilters={() => setFilterOpen(true)} />
-        </Animated.View>
+        </View>
       ) : (
-        <Animated.View key="folders" entering={FadeInDown.springify().damping(16)} style={{ flex: 1 }}>
+        <View key="folders" style={{ flex: 1 }}>
           <FoldersView top={insets.top} />
-        </Animated.View>
+        </View>
       )}
       <NavBar tab={tab} onTab={setTab} bottom={insets.bottom} />
       {filterOpen ? <FilterPanel top={insets.top} onClose={() => setFilterOpen(false)} /> : null}
@@ -133,12 +125,12 @@ function QueryRow() {
           <View key={label} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             {j > 0 ? (
               <Pressable onPress={() => { tap(); toggleOp(kind); }} hitSlop={6}>
-                <Animated.View key={g.op} entering={ZoomIn.springify()} style={styles.op}>
+                <Animated.View key={g.op} entering={FadeIn.duration(150)} style={styles.op}>
                   <Txt font="bold" size={11} color={C.onDark} style={{ lineHeight: 13 }}>{g.op}</Txt>
                 </Animated.View>
               </Pressable>
             ) : null}
-            <Animated.View entering={ZoomIn.springify()}>
+            <Animated.View entering={FadeIn.duration(150)}>
               <Chip label={label} color={C[sw]} textColor={fg(sw)} trailing="close" onPress={() => toggleTag(kind, label)} />
             </Animated.View>
           </View>
@@ -157,7 +149,7 @@ function QueryRow() {
 function SortSwitch({ value, onChange }: { value: 'recent' | 'az'; onChange: (v: 'recent' | 'az') => void }) {
   const x = useSharedValue(value === 'az' ? 1 : 0);
   useEffect(() => {
-    x.value = withSpring(value === 'az' ? 1 : 0, { damping: 14, stiffness: 220 });
+    x.value = withTiming(value === 'az' ? 1 : 0, { duration: 180 });
   }, [value, x]);
   const thumb = useAnimatedStyle(() => ({ transform: [{ translateX: x.value * 72 }] }));
   return (
@@ -192,8 +184,8 @@ function Bento({ list }: { list: Recipe[] }) {
     <View style={{ marginTop: 46, marginHorizontal: 16, gap: 16 }}>
       <Tile r={first} slot="w" index={next()} />
       {second ? (
-        <View style={{ flexDirection: 'row', gap: 14, alignItems: 'flex-start' }}>
-          <Tile r={second} slot="t" index={next()} />
+        <View style={{ flexDirection: 'row', gap: 14 }}>
+          <Tile r={second} slot="t" index={next()} inRow />
           <View style={{ gap: 16, flex: 1 }}>
             {third ? <Tile r={third} slot="n" index={next()} /> : null}
             {fourth ? <Tile r={fourth} slot="n" index={next()} /> : null}
@@ -203,8 +195,8 @@ function Bento({ list }: { list: Recipe[] }) {
       {pairs.map((pair) =>
         pair.length === 2 ? (
           <View key={pair[0].id} style={{ flexDirection: 'row', gap: 14, marginTop: 30 }}>
-            <Tile r={pair[0]} slot="n" index={next()} />
-            <Tile r={pair[1]} slot="n" index={next()} />
+            <Tile r={pair[0]} slot="n" index={next()} inRow />
+            <Tile r={pair[1]} slot="n" index={next()} inRow />
           </View>
         ) : (
           <View key={pair[0].id} style={{ marginTop: 30 }}>
@@ -216,30 +208,32 @@ function Bento({ list }: { list: Recipe[] }) {
   );
 }
 
-function Tile({ r, slot, index }: { r: Recipe; slot: Slot; index: number }) {
+/** Tiles grow with their text (min height per slot), and text is clamped so they never grow forever. */
+function Tile({ r, slot, index, inRow = false }: { r: Recipe; slot: Slot; index: number; inRow?: boolean }) {
   const sw = TILE_SWATCHES[index % TILE_SWATCHES.length];
   const color = C[sw];
   const tc = fg(sw);
   const dark = tc === C.onDark;
   const at = STICKER_AT[slot];
   const wide = slot === 'w' || slot === 'ws';
+  const delay = index * 60;
   return (
     <Animated.View
       key={`${r.id}-${slot}`}
-      entering={ZoomIn.springify().damping(14).delay(index * 60)}
-      layout={LinearTransition.springify().damping(16)}
-      style={[{ height: SLOT_HEIGHT[slot], zIndex: index }, slot === 'n' || slot === 't' ? { flex: 1 } : null]}>
+      entering={popIn(delay)}
+      layout={LinearTransition.duration(220)}
+      style={[{ minHeight: SLOT_HEIGHT[slot], zIndex: index }, inRow ? { flex: 1 } : null]}>
       <Brut
         color={color}
         radius={20}
-        style={{ flex: 1, padding: slot === 'w' ? 16 : 14, overflow: 'visible' }}
+        style={{ flexGrow: 1, padding: slot === 'w' ? 16 : 14, overflow: 'visible' }}
         onPress={() => router.push({ pathname: '/recipe/[id]', params: { id: r.id, color: sw } })}>
         {slot !== 'n' ? (
           <Txt size={12} font="semi" color={tc} style={{ opacity: 0.85, marginBottom: 6 }}>
             {addedLabel(r.addedAt)}
           </Txt>
         ) : null}
-        <Display size={slot === 'w' ? 28 : 19} color={tc} style={{ maxWidth: wide ? '62%' : '70%', zIndex: 1 }}>
+        <Display size={slot === 'w' ? 28 : 19} color={tc} style={{ maxWidth: wide ? '62%' : '70%', zIndex: 1 }} numberOfLines={slot === 't' ? 4 : 3}>
           {r.name}
         </Display>
         {slot === 'w' ? (
@@ -247,12 +241,12 @@ function Tile({ r, slot, index }: { r: Recipe; slot: Slot; index: number }) {
             {r.note}
           </Txt>
         ) : null}
-        <View style={{ marginTop: slot === 't' ? 10 : 'auto', flexDirection: 'row', flexWrap: 'wrap', gap: 6, zIndex: 1 }}>
+        <View style={{ marginTop: 'auto', paddingTop: 10, flexDirection: 'row', flexWrap: 'wrap', gap: 6, zIndex: 1 }}>
           <Chip label={r.type} color={dark ? 'transparent' : C.tile} textColor={tc} outline={dark ? tc : C.ink} />
           {slot !== 'n' && r.diets[0] ? <Chip label={r.diets[0]} color={dark ? 'transparent' : C.tile} textColor={tc} outline={dark ? tc : C.ink} /> : null}
           {slot === 'w' ? <Chip label={`${r.time} min`} icon="timer" color={dark ? 'transparent' : C.tile} textColor={tc} outline={dark ? tc : C.ink} /> : null}
         </View>
-        <Sticker recipe={r} size={at.size} rotate={at.rotate} style={at.pos} delay={140 + index * 70} />
+        <Sticker recipe={r} size={at.size} rotate={at.rotate} style={at.pos} delay={delay + STICKER_LAG} />
       </Brut>
     </Animated.View>
   );
@@ -268,7 +262,7 @@ function FilterPanel({ top, onClose }: { top: number; onClose: () => void }) {
       <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(150)} style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(42,21,48,0.4)' }]}>
         <Pressable style={{ flex: 1 }} onPress={onClose} />
       </Animated.View>
-      <Animated.View entering={ZoomIn.springify().damping(13)} style={{ position: 'absolute', left: 16, right: 16, top: top + 120 }}>
+      <Animated.View entering={FadeInDown.duration(220)} style={{ position: 'absolute', left: 16, right: 16, top: top + 120 }}>
         <BrutBox color={C.paper} radius={22} style={{ padding: 16 }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Display size={22}>Filtrer</Display>
@@ -301,45 +295,66 @@ function FilterPanel({ top, onClose }: { top: number; onClose: () => void }) {
 
 function FoldersView({ top }: { top: number }) {
   const { folders, recipes } = useStore();
+  const [sheet, setSheet] = useState(false);
+  const scroll = useRef<ScrollView>(null);
   const [first, ...rest] = folders;
-  const rows: Folder[][] = [];
-  for (let i = 0; i < rest.length; i += 2) rows.push(rest.slice(i, i + 2));
+  const cells: (Folder | 'new')[] = first ? [...rest, 'new'] : [];
+  const rows: (Folder | 'new')[][] = [];
+  for (let i = 0; i < cells.length; i += 2) rows.push(cells.slice(i, i + 2));
   const byId = new Map(recipes.map((r) => [r.id, r]));
   let idx = 0;
+  const open = () => setSheet(true);
   return (
-    <ScrollView contentContainerStyle={{ paddingTop: top + 14, paddingBottom: 140 }}>
-      <View style={{ marginHorizontal: 16 }}>
-        <Display size={44}>Dossiers</Display>
-        <Txt color={C.muted} style={{ marginTop: 6 }}>{folders.length} dossiers rangés à la main</Txt>
+    <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: top + 14, paddingBottom: 140 }}>
+      <View style={{ marginHorizontal: 16, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <View style={{ flex: 1 }}>
+          <Display size={44}>Dossiers</Display>
+          <Txt color={C.muted} style={{ marginTop: 6 }}>
+            {folders.length} dossier{folders.length > 1 ? 's' : ''} rangé{folders.length > 1 ? 's' : ''} à la main
+          </Txt>
+        </View>
+        <Brut color={C.amber} radius={14} style={styles.addFolder} onPress={open} accessibilityLabel="Nouveau dossier">
+          <Icon name="create-new-folder" />
+        </Brut>
       </View>
       <View style={{ marginTop: 52, marginHorizontal: 16, gap: 34 }}>
-        {first ? <FolderTile f={first} index={idx++} wide byId={byId} /> : null}
+        {first ? <FolderTile f={first} index={idx++} wide byId={byId} /> : <NewFolderTile index={0} onPress={open} />}
         {rows.map((row) => (
-          <View key={row[0].id} style={{ flexDirection: 'row', gap: 14 }}>
-            {row.map((f) => <FolderTile key={f.id} f={f} index={idx++} byId={byId} />)}
+          <View key={row[0] === 'new' ? 'new' : row[0].id} style={{ flexDirection: 'row', gap: 14 }}>
+            {row.map((f) => (f === 'new' ? <NewFolderTile key="new" index={idx++} onPress={open} /> : <FolderTile key={f.id} f={f} index={idx++} byId={byId} />))}
           </View>
         ))}
       </View>
+      <FolderSheet
+        visible={sheet}
+        onClose={() => setSheet(false)}
+        defaultColor={FOLDER_SWATCHES[folders.length % FOLDER_SWATCHES.length]}
+        onCreated={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
+      />
     </ScrollView>
   );
 }
 
+/** Folder cards grow with a long name, up to a clamp of 3–4 lines. */
 function FolderTile({ f, index, wide = false, byId }: { f: Folder; index: number; wide?: boolean; byId: Map<string, Recipe> }) {
-  const sw = FOLDER_SWATCHES[index % FOLDER_SWATCHES.length];
+  const sw = folderSwatch(f, index);
   const color = C[sw];
   const tc = fg(sw);
   const covers = f.ids.map((id) => byId.get(id)).filter((r): r is Recipe => !!r && !!(r.sticker || r.photoUri)).slice(0, wide ? 2 : 1);
+  const delay = index * 70;
   return (
-    <Animated.View entering={ZoomIn.springify().damping(14).delay(index * 70)} style={[{ height: wide ? 156 : 140, zIndex: index }, wide ? null : { flex: 1 }]}>
+    <Animated.View entering={popIn(delay)} style={[{ minHeight: wide ? 156 : 140, zIndex: index }, wide ? null : { flex: 1 }]}>
       <Brut
         color={color}
         radius={20}
-        style={{ flex: 1, padding: 14, paddingTop: 16, borderTopLeftRadius: 4, overflow: 'visible' }}
+        style={{ flexGrow: 1, padding: 14, paddingTop: 16, borderTopLeftRadius: 4, overflow: 'visible' }}
         onPress={() => router.push({ pathname: '/folder/[id]', params: { id: f.id, color: sw } })}>
         <View style={[styles.folderTab, { backgroundColor: color }]} />
         <View style={[styles.folderTabCover, { backgroundColor: color }]} />
-        <Display size={wide ? 30 : 20} color={tc} style={{ maxWidth: wide ? '52%' : '64%', zIndex: 2 }}>{f.name}</Display>
-        <View style={{ marginTop: 'auto', flexDirection: 'row', alignItems: 'baseline', gap: 6, zIndex: 2 }}>
+        <Display size={wide ? 30 : 20} color={tc} style={{ maxWidth: covers.length ? (wide ? '52%' : '64%') : '100%', zIndex: 2 }} numberOfLines={wide ? 3 : 4}>
+          {f.name}
+        </Display>
+        <View style={{ marginTop: 'auto', paddingTop: 10, flexDirection: 'row', alignItems: 'baseline', gap: 6, zIndex: 2 }}>
           <Display size={22} color={tc}>{f.ids.length}</Display>
           <Txt font="semi" size={13} color={tc}>recette{f.ids.length > 1 ? 's' : ''}</Txt>
         </View>
@@ -350,10 +365,21 @@ function FolderTile({ f, index, wide = false, byId }: { f: Folder; index: number
             size={wide ? (i ? 140 : 132) : 96}
             rotate={i ? 10 : -12}
             style={wide ? (i ? { right: -14, top: 18 } : { right: 92, top: -58 }) : { right: -18, top: -48 }}
-            delay={160 + index * 80 + i * 90}
+            delay={delay + STICKER_LAG + i * 110}
           />
         ))}
       </Brut>
+    </Animated.View>
+  );
+}
+
+function NewFolderTile({ index, onPress }: { index: number; onPress: () => void }) {
+  return (
+    <Animated.View entering={popIn(index * 70)} style={{ flex: 1, minHeight: 140 }}>
+      <Pressable onPress={() => { tap(); onPress(); }} style={({ pressed }) => [styles.newFolder, pressed && { backgroundColor: 'rgba(42,21,48,0.06)' }]}>
+        <Icon name="add" size={30} />
+        <Display size={18}>Nouveau dossier</Display>
+      </Pressable>
     </Animated.View>
   );
 }
@@ -377,7 +403,7 @@ function NavBar({ tab, onTab, bottom }: { tab: Tab; onTab: (t: Tab) => void; bot
 function NavTab({ label, icon, on, onPress }: { label: string; icon: 'home' | 'folder'; on: boolean; onPress: () => void }) {
   const s = useSharedValue(on ? 1 : 0);
   useEffect(() => {
-    s.value = withSpring(on ? 1 : 0, { damping: 12, stiffness: 240 });
+    s.value = withTiming(on ? 1 : 0, { duration: 180 });
   }, [on, s]);
   const pill = useAnimatedStyle(() => ({ transform: [{ scaleX: s.value }], opacity: s.value }));
   return (
@@ -408,6 +434,8 @@ const styles = StyleSheet.create({
   folderTab: { position: 'absolute', left: -2, top: -18, width: 78, height: 18, borderWidth: 2, borderBottomWidth: 0, borderColor: C.ink, borderTopLeftRadius: 10, borderTopRightRadius: 14 },
   folderTabCover: { position: 'absolute', left: 0, top: -2, width: 74, height: 4 },
   nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 10, paddingHorizontal: 28, backgroundColor: C.paper, borderTopWidth: 2, borderColor: C.ink, flexDirection: 'row', alignItems: 'center' },
+  addFolder: { width: 52, height: 52, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  newFolder: { flex: 1, borderRadius: 20, borderTopLeftRadius: 4, borderWidth: 2, borderStyle: 'dashed', borderColor: C.ink, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 14 },
   plusWrap: { marginTop: -40, transform: [{ rotate: '-4deg' }] },
   plus: { width: 66, height: 66, alignItems: 'center', justifyContent: 'center' },
 });

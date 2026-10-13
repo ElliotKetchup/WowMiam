@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Brut, BrutBox, Chip, Display, Icon, Sticker, tap, Txt } from '@/components/ui';
@@ -40,39 +40,43 @@ export default function RecipeScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.paper }}>
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 140 }}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 130 }}>
         <View style={styles.bar}>
           <Brut radius={12} style={styles.sq} onPress={() => router.back()} accessibilityLabel="Retour">
             <Icon name="arrow-back" />
+          </Brut>
+          <Brut radius={12} style={styles.edit} onPress={() => router.push({ pathname: '/create', params: { id: recipe.id } })} accessibilityLabel="Modifier la recette">
+            <Icon name="edit" size={20} />
+            <Txt font="bold" size={14}>Modifier</Txt>
           </Brut>
         </View>
 
         <BrutBox color={C[sw]} radius={24} style={styles.hero}>
           <Txt font="semi" size={13} color={fg(sw)} style={{ opacity: 0.85, marginBottom: 6 }}>{addedLabel(recipe.addedAt)}</Txt>
-          <Display size={36} color={fg(sw)} style={{ maxWidth: '64%' }}>{recipe.name}</Display>
-          <Sticker recipe={recipe} size={226} rotate={-12} style={{ right: -30, top: -66 }} delay={120} />
+          <Display size={recipe.name.length > 26 ? 28 : 36} color={fg(sw)} style={{ maxWidth: '64%' }} numberOfLines={5}>{recipe.name}</Display>
+          <Sticker key={recipe.photoUri ?? recipe.sticker} recipe={recipe} size={226} rotate={-12} style={{ right: -30, top: -66 }} delay={260} />
         </BrutBox>
 
-        <Animated.View entering={FadeInDown.delay(120).springify()} style={styles.chips}>
+        <Animated.View entering={FadeInDown.delay(80).duration(260)} style={styles.chips}>
           <Chip label={recipe.type} />
           {recipe.diets.map((d) => <Chip key={d} label={d} />)}
           <Chip label={`${recipe.time} min`} icon="timer" />
         </Animated.View>
 
         {recipe.note ? (
-          <Animated.View entering={FadeInDown.delay(180).springify()}>
+          <Animated.View entering={FadeInDown.delay(120).duration(260)}>
             <Txt size={16} style={{ marginHorizontal: 16, marginTop: 14, lineHeight: 23 }}>{recipe.note}</Txt>
           </Animated.View>
         ) : null}
 
-        <Animated.View entering={FadeInDown.delay(240).springify()} style={styles.block}>
+        <Animated.View entering={FadeInDown.delay(160).duration(260)} style={styles.block}>
           <View style={styles.blockHead}>
             <Display size={22}>Ingrédients</Display>
             <BrutBox radius={12} style={styles.stepper}>
               <Pressable onPress={() => { tap(); setServes(recipe.id, Math.max(1, serves - 1)); }} style={styles.stepBtn} accessibilityLabel="Moins de personnes">
                 <Icon name="remove" />
               </Pressable>
-              <Animated.View key={serves} entering={ZoomIn.springify()} style={styles.stepVal}>
+              <Animated.View key={serves} entering={FadeIn.duration(140)} style={styles.stepVal}>
                 <Txt font="bold" size={14}>{serves} pers.</Txt>
               </Animated.View>
               <Pressable onPress={() => { tap(); setServes(recipe.id, Math.min(12, serves + 1)); }} style={styles.stepBtn} accessibilityLabel="Plus de personnes">
@@ -85,9 +89,9 @@ export default function RecipeScreen() {
             return (
               <Pressable key={`${label}-${i}`} onPress={() => { tap(); toggle(i); }} style={({ pressed }) => [styles.ing, pressed && { backgroundColor: 'rgba(42,21,48,0.06)' }]}>
                 <View style={[styles.box, done && { backgroundColor: C.olive }]}>
-                  {done ? <Animated.View entering={ZoomIn.springify()}><Icon name="check" size={18} /></Animated.View> : null}
+                  {done ? <Animated.View entering={FadeIn.duration(120)}><Icon name="check" size={18} /></Animated.View> : null}
                 </View>
-                <Animated.View key={`${serves}`} entering={FadeInDown.springify()} style={{ width: 96 }}>
+                <Animated.View key={`${serves}`} entering={FadeIn.duration(160)} style={{ width: 96 }}>
                   <Txt font="bold" size={16} style={{ opacity: done ? 0.45 : 1 }}>{formatQty(q, unit, factor)}</Txt>
                 </Animated.View>
                 <Txt size={16} style={{ flex: 1, opacity: done ? 0.45 : 1, textDecorationLine: done ? 'line-through' : 'none' }}>{label}</Txt>
@@ -97,7 +101,7 @@ export default function RecipeScreen() {
         </Animated.View>
 
         {recipe.tools.length ? (
-          <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.block}>
+          <Animated.View entering={FadeInDown.delay(200).duration(260)} style={styles.block}>
             <Display size={22} style={{ marginBottom: 12 }}>Ustensiles</Display>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
               {recipe.tools.map((t) => <Chip key={t} label={t} color={C.amber} />)}
@@ -106,7 +110,7 @@ export default function RecipeScreen() {
         ) : null}
 
         {recipe.steps.length ? (
-          <Animated.View entering={FadeInDown.delay(360).springify()} style={styles.block}>
+          <Animated.View entering={FadeInDown.delay(240).duration(260)} style={styles.block}>
             <Display size={22} style={{ marginBottom: 12 }}>Étapes</Display>
             {recipe.steps.map(([text], i) => (
               <View key={`${i}-${text}`} style={styles.step}>
@@ -133,7 +137,8 @@ export default function RecipeScreen() {
 }
 
 const styles = StyleSheet.create({
-  bar: { height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center' },
+  bar: { height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  edit: { height: 44, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6 },
   sq: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   hero: { marginTop: 36, marginHorizontal: 16, minHeight: 210, padding: 18, justifyContent: 'flex-end', overflow: 'visible' },
   chips: { marginTop: 18, marginHorizontal: 16, flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

@@ -1,14 +1,14 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSequence, withTiming, ZoomIn } from 'react-native-reanimated';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Chip, Display, Icon, type IconName, Sticker, tap, Txt } from '@/components/ui';
-import { CATALOG, type Kind, parseIngredient, type Recipe } from '@/lib/data';
+import { Brut, BrutBox, Chip, Display, Icon, type IconName, stampIn, Sticker, tap, Txt } from '@/components/ui';
+import { CATALOG, ingredientLine, type Kind, parseIngredient, type Recipe, type Step } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, F } from '@/lib/theme';
 
@@ -18,25 +18,41 @@ async function keepPhoto(uri: string, id: string): Promise<string> {
   const dir = new Directory(Paths.document, 'photos');
   dir.create({ idempotent: true });
   const ext = uri.split('?')[0].split('.').pop() || 'jpg';
-  const dest = new File(dir, `${id}.${ext}`);
+  // Unique name: re-picking a photo while editing must not collide with (or be cached as) the old one.
+  const dest = new File(dir, `${id}-${Date.now().toString(36)}.${ext}`);
   await new File(uri).copy(dest);
   return dest.uri;
 }
 
-export default function CreateScreen() {
+/** "Écris 10 min" gives a timer; otherwise an unchanged step keeps the timer it had. */
+function toSteps(lines: readonly string[], previous: readonly Step[]): Step[] {
+  const known = new Map(previous);
+  return lines
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => [s, Number(s.match(/(\d+)\s*min/)?.[1] ?? known.get(s) ?? 0)]);
+}
+
+/** Creates a recipe, or edits one when opened with `?id=`. */
+export default function EditorScreen() {
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ id?: string }>();
+  const existing = useStore((s) => (params.id ? s.recipes.find((r) => r.id === params.id) : undefined));
   const folders = useStore((s) => s.folders);
-  const addRecipe = useStore((s) => s.addRecipe);
-  const [id] = useState(newId);
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [note, setNote] = useState('');
-  const [type, setType] = useState('Plat');
-  const [picked, setPicked] = useState<Record<Exclude<Kind, 'type'>, string[]>>({ diet: [], tool: [] });
-  const [folderId, setFolderId] = useState<string | null>(null);
-  const [time, setTime] = useState('20');
-  const [ings, setIngs] = useState<string[]>(['']);
-  const [steps, setSteps] = useState<string[]>(['']);
+  const saveRecipe = useStore((s) => s.saveRecipe);
+  const deleteRecipe = useStore((s) => s.deleteRecipe);
+  const editing = !!existing;
+  const [id] = useState(() => existing?.id ?? newId());
+  const [photo, setPhoto] = useState<string | null>(existing?.photoUri ?? null);
+  const [freshPhoto, setFreshPhoto] = useState(false);
+  const [name, setName] = useState(existing?.name ?? '');
+  const [note, setNote] = useState(existing?.note ?? '');
+  const [type, setType] = useState(existing?.type ?? 'Plat');
+  const [picked, setPicked] = useState<Record<Exclude<Kind, 'type'>, string[]>>({ diet: existing?.diets ?? [], tool: existing?.tools ?? [] });
+  const [folderIds, setFolderIds] = useState<string[]>(() => folders.filter((f) => existing && f.ids.includes(existing.id)).map((f) => f.id));
+  const [time, setTime] = useState(String(existing?.time ?? 20));
+  const [ings, setIngs] = useState<string[]>(() => (existing?.ingredients.length ? existing.ingredients.map(ingredientLine) : ['']));
+  const [steps, setSteps] = useState<string[]>(() => (existing?.steps.length ? existing.steps.map(([t]) => t) : ['']));
   const [error, setError] = useState(false);
   const [saved, setSaved] = useState(false);
   const scroll = useRef<ScrollView>(null);
@@ -57,6 +73,7 @@ export default function CreateScreen() {
     } catch {
       setPhoto(res.assets[0].uri);
     }
+    setFreshPhoto(true);
   };
 
   const toggle = (kind: 'diet' | 'tool', label: string) =>
@@ -73,21 +90,36 @@ export default function CreateScreen() {
     const recipe: Recipe = {
       id,
       name: name.trim(),
+      sticker: existing?.sticker,
       photoUri: photo ?? undefined,
       type,
       diets: picked.diet,
       tools: picked.tool,
       time: Math.max(1, Number.parseInt(time, 10) || 20),
-      serves: 2,
-      addedAt: Date.now(),
+      serves: existing?.serves ?? 2,
+      addedAt: existing?.addedAt ?? Date.now(),
       note: note.trim(),
       ingredients: ings.map((l) => l.trim()).filter(Boolean).map(parseIngredient),
-      steps: steps.map((s) => s.trim()).filter(Boolean).map((s) => [s, Number(s.match(/(\d+)\s*min/)?.[1] ?? 0)] as [string, number]),
+      steps: toSteps(steps, existing?.steps ?? []),
     };
-    addRecipe(recipe, folderId);
+    saveRecipe(recipe, folderIds);
     setSaved(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
     setTimeout(() => router.back(), 900);
+  };
+
+  const remove = () => {
+    Alert.alert('Supprimer cette recette ?', 'Elle sera retirée de tous ses dossiers. C’est définitif.', [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Supprimer',
+        style: 'destructive',
+        onPress: () => {
+          router.dismissAll();
+          setTimeout(() => deleteRecipe(id), 400);
+        },
+      },
+    ]);
   };
 
   const blocks: { label: string; icon: IconName; color: string; textColor?: string; onPress: () => void }[] = [
@@ -103,21 +135,23 @@ export default function CreateScreen() {
         <Brut radius={12} style={styles.sq} onPress={() => router.back()} accessibilityLabel="Fermer">
           <Icon name="close" />
         </Brut>
-        <Txt font="semi" color={C.muted}>Nouvelle recette</Txt>
+        <Txt font="semi" color={C.muted}>{editing ? 'Modifier la recette' : 'Nouvelle recette'}</Txt>
         <Brut color={C.ink} shadow={C.pink} radius={12} style={styles.save} onPress={save}>
           <Txt font="bold" color={C.paper}>Enregistrer</Txt>
         </Brut>
       </View>
 
-      <ScrollView ref={scroll} contentContainerStyle={{ paddingBottom: 150 }} keyboardShouldPersistTaps="handled">
+      <ScrollView ref={scroll} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
         <BrutBox color={C.teal} radius={22} style={styles.photo}>
-          {photo ? (
+          {photo || existing?.sticker ? (
             <>
-              <Sticker recipe={{ photoUri: photo, name }} size={190} rotate={-10} style={{ right: 4, top: -40 }} />
-              <Animated.View entering={ZoomIn.delay(300).springify()} style={styles.badge}>
-                <Icon name="auto-awesome" size={16} color={C.amber} />
-                <Txt font="bold" size={12} color={C.amber} style={{ lineHeight: 16 }}>Sticker prêt</Txt>
-              </Animated.View>
+              <Sticker key={photo ?? 'sticker'} recipe={{ photoUri: photo ?? undefined, sticker: existing?.sticker, name }} size={190} rotate={-10} style={{ right: 4, top: -40 }} />
+              {freshPhoto ? (
+                <Animated.View entering={FadeIn.delay(450).duration(200)} style={styles.badge}>
+                  <Icon name="auto-awesome" size={16} color={C.amber} />
+                  <Txt font="bold" size={12} color={C.amber} style={{ lineHeight: 16 }}>Sticker prêt</Txt>
+                </Animated.View>
+              ) : null}
             </>
           ) : (
             <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -152,8 +186,8 @@ export default function CreateScreen() {
           {CATALOG.type.map((t) => {
             const on = type === t;
             return (
-              <Brut key={t} color={on ? C.pink : C.tile} radius={14} offset={on ? 6 : 4} style={styles.typeBtn} onPress={() => setType(t)}>
-                {on ? <Animated.View entering={ZoomIn.springify()}><Icon name="check-circle" size={20} color={C.onDark} /></Animated.View> : null}
+              <Brut key={t} color={on ? C.pink : C.tile} radius={14} style={styles.typeBtn} onPress={() => setType(t)}>
+                {on ? <Animated.View entering={FadeIn.duration(120)}><Icon name="check-circle" size={20} color={C.onDark} /></Animated.View> : null}
                 <Display size={15} color={on ? C.onDark : C.ink}>{t}</Display>
               </Brut>
             );
@@ -173,7 +207,10 @@ export default function CreateScreen() {
           </View>
         </Prop>
         <Prop icon="folder" label="Dossier">
-          {folders.map((f) => <Chip key={f.id} label={f.name} color={folderId === f.id ? C.plum : C.tile} textColor={folderId === f.id ? C.onDark : C.ink} onPress={() => setFolderId((cur) => (cur === f.id ? null : f.id))} />)}
+          {folders.map((f) => {
+            const on = folderIds.includes(f.id);
+            return <Chip key={f.id} label={f.name} color={on ? C.plum : C.tile} textColor={on ? C.onDark : C.ink} onPress={() => setFolderIds((cur) => (on ? cur.filter((x) => x !== f.id) : [...cur, f.id]))} />;
+          })}
         </Prop>
 
         <View style={styles.section}>
@@ -197,24 +234,29 @@ export default function CreateScreen() {
             </Animated.View>
           ))}
         </View>
+
+        {editing ? (
+          <Pressable onPress={remove} style={styles.danger} hitSlop={6}>
+            <Icon name="delete-outline" size={20} color={C.coral} />
+            <Txt font="semi" color={C.coral}>Supprimer la recette</Txt>
+          </Pressable>
+        ) : null}
       </ScrollView>
 
-      <View style={[styles.blocks, { paddingBottom: insets.bottom + 12 }]}>
-        <Txt font="semi" size={13} color={C.muted} style={{ marginBottom: 10 }}>Ajouter un bloc</Txt>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          {blocks.map((b) => (
-            <Brut key={b.label} color={b.color} style={styles.blk} onPress={b.onPress}>
-              <Icon name={b.icon} size={26} color={b.textColor ?? C.ink} />
-              <Txt font="bold" size={12} color={b.textColor ?? C.ink} style={{ lineHeight: 15 }}>{b.label}</Txt>
-            </Brut>
-          ))}
-        </View>
+      {/* In the layout flow (not floating), so it can never cover the end of the form. */}
+      <View style={[styles.blocks, { paddingBottom: insets.bottom + 10 }]}>
+        {blocks.map((b) => (
+          <Brut key={b.label} color={b.color} radius={12} offset={3} style={styles.blk} onPress={b.onPress} accessibilityLabel={`Ajouter : ${b.label}`}>
+            <Icon name={b.icon} size={20} color={b.textColor ?? C.ink} />
+            <Txt font="bold" size={11} color={b.textColor ?? C.ink} style={{ lineHeight: 13 }}>{b.label}</Txt>
+          </Brut>
+        ))}
       </View>
 
       {saved ? (
         <View style={[StyleSheet.absoluteFill, { alignItems: 'center', justifyContent: 'center' }]} pointerEvents="none">
-          <Animated.View entering={ZoomIn.springify().damping(9)} style={styles.stamp}>
-            <Display size={38}>Enregistré !</Display>
+          <Animated.View entering={stampIn} style={styles.stamp}>
+            <Display size={38}>{editing ? 'Modifié !' : 'Enregistré !'}</Display>
           </Animated.View>
         </View>
       ) : null}
@@ -253,7 +295,8 @@ const styles = StyleSheet.create({
   line: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, borderBottomWidth: 1, borderColor: 'rgba(42,21,48,0.12)' },
   dot: { width: 12, height: 12, borderWidth: 2, borderColor: C.ink, borderRadius: 3 },
   lineInput: { flex: 1, fontFamily: F.medium, fontSize: 15, color: C.ink, paddingVertical: 8 },
-  blocks: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 12, paddingHorizontal: 16, backgroundColor: C.paper, borderTopWidth: 2, borderColor: C.ink },
-  blk: { flex: 1, height: 70, alignItems: 'center', justifyContent: 'center', gap: 5 },
-  stamp: { paddingHorizontal: 34, paddingVertical: 20, borderRadius: 26, backgroundColor: C.amber, borderWidth: 3, borderColor: C.ink, boxShadow: '0px 0px 0px 8px #FFFFFF, 0px 14px 24px rgba(42,21,48,0.3)', transform: [{ rotate: '-8deg' }] },
+  danger: { marginTop: 36, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8 },
+  blocks: { flexDirection: 'row', gap: 8, paddingTop: 10, paddingHorizontal: 16, backgroundColor: C.paper, borderTopWidth: 2, borderColor: C.ink },
+  blk: { flex: 1, height: 50, alignItems: 'center', justifyContent: 'center', gap: 2 },
+  stamp: { paddingHorizontal: 34, paddingVertical: 20, borderRadius: 26, backgroundColor: C.amber, borderWidth: 3, borderColor: C.ink, boxShadow: '0px 0px 0px 8px #FFFFFF, 0px 14px 24px rgba(42,21,48,0.3)' },
 });

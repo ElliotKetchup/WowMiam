@@ -4,10 +4,10 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Animated, { SlideInRight, SlideOutLeft, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Display, Icon, Sticker, Txt } from '@/components/ui';
+import { Brut, BrutBox, Display, Icon, STICKER_LAG, Sticker, Txt } from '@/components/ui';
 import { useStore } from '@/lib/store';
 import { C, hardShadow } from '@/lib/theme';
 
@@ -49,7 +49,7 @@ export default function CookScreen() {
         <View style={styles.prog}>
           {steps.map((_, k) => (
             <View key={k} style={styles.seg}>
-              {k <= i ? <Animated.View entering={SlideInRight.springify().damping(16)} style={styles.segFill} /> : null}
+              {k <= i ? <Animated.View entering={SlideInRight.duration(240)} style={styles.segFill} /> : null}
             </View>
           ))}
         </View>
@@ -57,13 +57,13 @@ export default function CookScreen() {
       </View>
 
       <View style={styles.stage}>
-        <Animated.View key={i} entering={SlideInRight.springify().damping(15)} exiting={SlideOutLeft.duration(260)} style={StyleSheet.absoluteFill}>
+        <Animated.View key={i} entering={SlideInRight.duration(280)} exiting={SlideOutLeft.duration(240)} style={StyleSheet.absoluteFill}>
           <BrutBox color={C.paper} radius={26} offset={6} style={[styles.card, { boxShadow: hardShadow(6, C.teal) }]}>
             {done ? (
               <>
                 <Display size={18} color={C.pink}>C’est prêt</Display>
                 <Display size={50} style={{ marginTop: 10 }}>Bon appétit !</Display>
-                <Sticker recipe={recipe} size={240} rotate={-10} style={{ right: -26, bottom: -40 }} delay={150} />
+                <Sticker recipe={recipe} size={240} rotate={-10} style={{ right: -26, bottom: -40 }} delay={STICKER_LAG} />
               </>
             ) : (
               <>
@@ -81,7 +81,7 @@ export default function CookScreen() {
                     </Display>
                   </Brut>
                 ) : null}
-                <Sticker recipe={recipe} size={150} rotate={9} style={{ right: -18, bottom: -26 }} delay={200} />
+                <Sticker recipe={recipe} size={150} rotate={9} style={{ right: -18, bottom: -26 }} delay={STICKER_LAG} />
               </>
             )}
           </BrutBox>
@@ -90,7 +90,7 @@ export default function CookScreen() {
 
       <View style={[styles.foot, { paddingBottom: insets.bottom + 20 }]}>
         <Brut color={C.amber} shadow={C.paper} style={styles.next} onPress={done ? () => router.back() : next}>
-          <Animated.View key={done ? 'end' : i === steps.length - 1 ? 'last' : 'next'} entering={ZoomIn.springify()} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Animated.View key={done ? 'end' : i === steps.length - 1 ? 'last' : 'next'} entering={FadeIn.duration(160)} style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Display size={19}>{done ? 'Fermer' : i === steps.length - 1 ? 'Terminer' : 'Étape suivante'}</Display>
             <Icon name="arrow-forward" />
           </Animated.View>

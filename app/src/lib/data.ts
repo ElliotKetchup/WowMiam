@@ -1,4 +1,5 @@
 /** Recipe model, catalog of tags, seed library built from Elliot's own dishes. */
+import { FOLDER_SWATCHES, type Swatch } from './theme';
 
 export type Kind = 'type' | 'diet' | 'tool';
 
@@ -37,11 +38,12 @@ export interface Folder {
   id: string;
   name: string;
   ids: string[];
+  color?: Swatch;
 }
 
 export const CATALOG: Record<Kind, readonly string[]> = {
   type: ['Entrée', 'Plat', 'Dessert'],
-  diet: ['Végé', 'Vegan', 'Sans gluten'],
+  diet: ['Végé', 'Vegan', 'Sans gluten', 'Sans lactose'],
   tool: ['Four', 'Plaque', 'Poêle', 'Casserole', 'Saladier'],
 };
 export const KIND_LABEL: Record<Kind, string> = { type: 'Type', diet: 'Régime', tool: 'Ustensiles' };
@@ -58,7 +60,7 @@ export function seedRecipes(now: number = Date.now()): Recipe[] {
       steps: [['Préchauffe le four à 220 °C.', 0], ['Étale la sauce tomate sur les galettes.', 0], ['Ajoute les champignons émincés, la mozzarella et l’origan.', 0], ['Enfourne jusqu’à ce que les bords dorent.', 9]],
     },
     {
-      id: 'endives', name: 'Salade d’endives aux pommes', sticker: 'salade-endives', type: 'Entrée', diets: ['Végé', 'Vegan', 'Sans gluten'], tools: ['Saladier'],
+      id: 'endives', name: 'Salade d’endives aux pommes', sticker: 'salade-endives', type: 'Entrée', diets: ['Végé', 'Vegan', 'Sans gluten', 'Sans lactose'], tools: ['Saladier'],
       time: 10, serves: 2, addedAt: now - 3 * DAY,
       note: 'Endives croquantes, dés de pomme et vinaigrette à la moutarde de Dijon.',
       ingredients: [[3, '', 'endives'], [2, '', 'pommes'], [30, 'g', 'cerneaux de noix'], [1, 'c. à s.', 'moutarde de Dijon'], [3, 'c. à s.', 'huile de colza'], [1, 'c. à s.', 'vinaigre de cidre']],
@@ -103,6 +105,9 @@ export const SEED_FOLDERS: Folder[] = [
   { id: 'batch', name: 'Batch cooking', ids: ['pates', 'courgettes'] },
 ];
 
+/** Folders keep the colour picked at creation; seed folders fall back to their position. */
+export const folderSwatch = (f: Folder, index: number): Swatch => f.color ?? FOLDER_SWATCHES[index % FOLDER_SWATCHES.length];
+
 export function tagsOf(r: Recipe, kind: Kind): string[] {
   return kind === 'type' ? [r.type] : kind === 'diet' ? r.diets : r.tools;
 }
@@ -118,6 +123,11 @@ export function addedLabel(ts: number, now: number = Date.now()): string {
   if (ts >= start - DAY) return 'Hier';
   if (ts >= start - 6 * DAY) return WEEKDAYS[d.getDay()];
   return `Le ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+/** Inverse of parseIngredient, used to prefill the editor. */
+export function ingredientLine([q, unit, label]: Ingredient): string {
+  return [formatQty(q, unit, 1), label].filter(Boolean).join(' ');
 }
 
 export function formatQty(q: number | null, unit: string, factor: number): string {

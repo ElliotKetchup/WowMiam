@@ -3,8 +3,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import type { ComponentProps, ReactNode } from 'react';
-import { Pressable, type PressableProps, type StyleProp, Text, type TextProps, View, type ViewStyle } from 'react-native';
-import Animated, { Keyframe } from 'react-native-reanimated';
+import { Platform, Pressable, type PressableProps, type StyleProp, Text, type TextProps, View, type ViewStyle } from 'react-native';
+import Animated, { Easing, FadeIn, Keyframe } from 'react-native-reanimated';
 
 import { type Recipe, STICKERS } from '@/lib/data';
 import { C, F, hardShadow } from '@/lib/theme';
@@ -98,6 +98,7 @@ export function Chip({ label, color = C.tile, textColor = C.ink, icon, trailing,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4,
+        maxWidth: '100%',
         height: big ? 38 : 28,
         paddingHorizontal: big ? 14 : 10,
         borderRadius: 999,
@@ -107,7 +108,7 @@ export function Chip({ label, color = C.tile, textColor = C.ink, icon, trailing,
         transform: [{ scale: pressed ? 0.92 : 1 }],
       }}>
       {icon ? <Icon name={icon} size={big ? 18 : 15} color={textColor} /> : null}
-      <Txt font="semi" size={big ? 14 : 13} color={textColor} style={{ lineHeight: big ? 18 : 16 }}>
+      <Txt font="semi" size={big ? 14 : 13} color={textColor} style={{ lineHeight: big ? 18 : 16, flexShrink: 1 }} numberOfLines={1}>
         {label}
       </Txt>
       {trailing ? <Icon name={trailing} size={15} color={textColor} /> : null}
@@ -115,22 +116,46 @@ export function Chip({ label, color = C.tile, textColor = C.ink, icon, trailing,
   );
   if (!onPress) return body(false);
   return (
-    <Pressable onPress={() => { tap(); onPress(); }} hitSlop={6}>
+    <Pressable onPress={() => { tap(); onPress(); }} hitSlop={6} style={{ maxWidth: '100%' }}>
       {({ pressed }) => body(pressed)}
     </Pressable>
   );
 }
 
-/** Sticker "slap": lands from above, squashes a hair, settles. */
+/**
+ * Motion vocabulary. Only two things bounce in the app, and barely:
+ * tiles and folders `popIn`; stickers `slapIn` (dropped from above, pressed flat, no rebound).
+ * Everything else fades or slides on a plain timing curve.
+ */
+export const popIn = (delay = 0) =>
+  // Reanimated's web runtime pins in-flow Keyframe targets to `position: absolute` once they finish; plain fade there.
+  Platform.OS === 'web'
+    ? FadeIn.duration(260).delay(delay)
+    : new Keyframe({
+        0: { opacity: 0, transform: [{ scale: 0.94 }] },
+        65: { opacity: 1, transform: [{ scale: 1.012 }], easing: Easing.out(Easing.cubic) },
+        100: { opacity: 1, transform: [{ scale: 1 }], easing: Easing.inOut(Easing.quad) },
+      })
+        .duration(380)
+        .delay(delay);
+
+/** Lands roughly when the tile it sits on has settled. */
+export const STICKER_LAG = 300;
+
 export const slapIn = (delay = 0) =>
   new Keyframe({
-    0: { opacity: 0, transform: [{ scale: 1.4 }, { rotate: '10deg' }, { translateY: -14 }] },
-    55: { opacity: 1, transform: [{ scale: 0.93 }, { rotate: '-1.5deg' }, { translateY: 0 }] },
-    80: { opacity: 1, transform: [{ scale: 1.02 }, { rotate: '0deg' }, { translateY: 0 }] },
-    100: { opacity: 1, transform: [{ scale: 1 }, { rotate: '0deg' }, { translateY: 0 }] },
+    0: { opacity: 0, transform: [{ translateY: -90 }, { scale: 1.22 }, { rotate: '8deg' }] },
+    20: { opacity: 1, transform: [{ translateY: -86 }, { scale: 1.21 }, { rotate: '7.6deg' }] },
+    100: { opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }, { rotate: '0deg' }], easing: Easing.in(Easing.cubic) },
   })
-    .duration(520)
+    .duration(340)
     .delay(delay);
+
+/** The "Enregistré !" stamp: same press-flat landing as a sticker. */
+export const stampIn = new Keyframe({
+  0: { opacity: 0, transform: [{ scale: 1.7 }, { rotate: '-2deg' }] },
+  100: { opacity: 1, transform: [{ scale: 1 }, { rotate: '-8deg' }], easing: Easing.in(Easing.cubic) },
+}).duration(260);
 
 type StickerProps = {
   recipe: Pick<Recipe, 'sticker' | 'photoUri' | 'name'>;

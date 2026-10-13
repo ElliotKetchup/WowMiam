@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { type Folder, type Kind, type Recipe, SEED_FOLDERS, normalize, seedRecipes, tagsOf } from './data';
+import type { Swatch } from './theme';
 
 export type Op = 'OU' | 'ET';
 export type Groups = Record<Kind, { op: Op; on: string[] }>;
@@ -22,8 +23,16 @@ interface State {
   setSort: (sort: Sort) => void;
   setQuery: (query: string) => void;
   setServes: (id: string, n: number) => void;
-  addRecipe: (recipe: Recipe, folderId: string | null) => void;
+  /** Insert or replace a recipe, and make it a member of exactly `folderIds`. */
+  saveRecipe: (recipe: Recipe, folderIds: readonly string[]) => void;
+  deleteRecipe: (id: string) => void;
+  addFolder: (name: string, color: Swatch) => string;
+  updateFolder: (id: string, patch: Pick<Folder, 'name' | 'color'>) => void;
+  deleteFolder: (id: string) => void;
+  toggleInFolder: (folderId: string, recipeId: string) => void;
 }
+
+const newFolderId = (): string => `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
 const DEFAULT_GROUPS: Groups = {
   diet: { op: 'OU', on: [] },
@@ -33,7 +42,7 @@ const DEFAULT_GROUPS: Groups = {
 
 export const useStore = create<State>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       recipes: seedRecipes(),
       folders: SEED_FOLDERS,
       groups: DEFAULT_GROUPS,
@@ -55,10 +64,40 @@ export const useStore = create<State>()(
       setSort: (sort) => set({ sort }),
       setQuery: (query) => set({ query }),
       setServes: (id, n) => set((s) => ({ serves: { ...s.serves, [id]: n } })),
-      addRecipe: (recipe, folderId) =>
+      saveRecipe: (recipe, folderIds) =>
+        set((s) => {
+          const exists = s.recipes.some((r) => r.id === recipe.id);
+          return {
+            recipes: exists ? s.recipes.map((r) => (r.id === recipe.id ? recipe : r)) : [recipe, ...s.recipes],
+            folders: s.folders.map((f) => {
+              const has = f.ids.includes(recipe.id);
+              const want = folderIds.includes(f.id);
+              if (has === want) return f;
+              return { ...f, ids: want ? [recipe.id, ...f.ids] : f.ids.filter((x) => x !== recipe.id) };
+            }),
+          };
+        }),
+      deleteRecipe: (id) =>
+        set((s) => {
+          const { [id]: _gone, ...serves } = s.serves;
+          return {
+            recipes: s.recipes.filter((r) => r.id !== id),
+            folders: s.folders.map((f) => (f.ids.includes(id) ? { ...f, ids: f.ids.filter((x) => x !== id) } : f)),
+            serves,
+          };
+        }),
+      addFolder: (name, color) => {
+        const id = newFolderId();
+        set({ folders: [...get().folders, { id, name, color, ids: [] }] });
+        return id;
+      },
+      updateFolder: (id, patch) => set((s) => ({ folders: s.folders.map((f) => (f.id === id ? { ...f, ...patch } : f)) })),
+      deleteFolder: (id) => set((s) => ({ folders: s.folders.filter((f) => f.id !== id) })),
+      toggleInFolder: (folderId, recipeId) =>
         set((s) => ({
-          recipes: [recipe, ...s.recipes],
-          folders: s.folders.map((f) => (f.id === folderId ? { ...f, ids: [recipe.id, ...f.ids] } : f)),
+          folders: s.folders.map((f) =>
+            f.id !== folderId ? f : { ...f, ids: f.ids.includes(recipeId) ? f.ids.filter((x) => x !== recipeId) : [recipeId, ...f.ids] },
+          ),
         })),
     }),
     {
