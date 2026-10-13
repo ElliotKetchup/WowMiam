@@ -2,7 +2,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -215,24 +215,14 @@ export default function EditorScreen() {
 
         <View style={styles.section}>
           <Display size={22}>Ingrédients</Display>
-          <Txt size={13} color={C.muted} style={{ marginTop: 4 }}>Un par ligne, par exemple « 200 g lentilles corail ».</Txt>
-          {ings.map((v, i) => (
-            <Animated.View key={`ing-${i}`} entering={FadeIn} style={styles.line}>
-              <View style={styles.dot} />
-              <TextInput value={v} onChangeText={(t) => setIngs((arr) => arr.map((x, k) => (k === i ? t : x)))} placeholder="Quantité et ingrédient" placeholderTextColor={C.muted} style={styles.lineInput} />
-            </Animated.View>
-          ))}
+          <Txt size={13} color={C.muted} style={{ marginTop: 4 }}>Par exemple « 200 g lentilles corail ». Entrée pour passer au suivant.</Txt>
+          <LineList lines={ings} onChange={setIngs} placeholder="Quantité et ingrédient" bullet={() => <View style={styles.dot} />} />
         </View>
 
         <View style={styles.section}>
           <Display size={22}>Étapes</Display>
-          <Txt size={13} color={C.muted} style={{ marginTop: 4 }}>Écris « 10 min » dans une étape pour avoir un minuteur.</Txt>
-          {steps.map((v, i) => (
-            <Animated.View key={`step-${i}`} entering={FadeIn} style={styles.line}>
-              <Display size={16} style={{ width: 22 }}>{i + 1}</Display>
-              <TextInput value={v} onChangeText={(t) => setSteps((arr) => arr.map((x, k) => (k === i ? t : x)))} placeholder="Ce qu’il faut faire" placeholderTextColor={C.muted} style={styles.lineInput} multiline />
-            </Animated.View>
-          ))}
+          <Txt size={13} color={C.muted} style={{ marginTop: 4 }}>Entrée pour l’étape suivante. Écris « 10 min » pour avoir un minuteur.</Txt>
+          <LineList lines={steps} onChange={setSteps} placeholder="Ce qu’il faut faire" bullet={(i) => <Display size={16} style={{ width: 22 }}>{i + 1}</Display>} multiline />
         </View>
 
         {editing ? (
@@ -262,6 +252,69 @@ export default function EditorScreen() {
       ) : null}
     </KeyboardAvoidingView>
   );
+}
+
+type LineListProps = {
+  lines: string[];
+  onChange: (lines: string[]) => void;
+  placeholder: string;
+  bullet: (index: number) => ReactNode;
+  /** Long lines wrap on screen, but Enter still starts a new line item. */
+  multiline?: boolean;
+};
+
+/**
+ * Notion-style list: Enter adds a new item right after the current one and moves the cursor there,
+ * Enter on an empty item closes the keyboard, Backspace on an empty item removes it.
+ */
+function LineList({ lines, onChange, placeholder, bullet, multiline = false }: LineListProps) {
+  const refs = useRef<(TextInput | null)[]>([]);
+  const focusAt = useRef<number | null>(null);
+  const prevLength = useRef(lines.length);
+
+  useEffect(() => {
+    const grew = lines.length > prevLength.current;
+    prevLength.current = lines.length;
+    const target = focusAt.current ?? (grew ? lines.length - 1 : null);
+    focusAt.current = null;
+    if (target === null) return undefined;
+    // After the key event finishes, so the Backspace that removed a line doesn't also hit the one we focus.
+    const t = setTimeout(() => refs.current[target]?.focus(), 0);
+    return () => clearTimeout(t);
+  }, [lines]);
+
+  const insertAfter = (i: number) => {
+    if (!lines[i].trim()) {
+      refs.current[i]?.blur();
+      return;
+    }
+    focusAt.current = i + 1;
+    onChange([...lines.slice(0, i + 1), '', ...lines.slice(i + 1)]);
+  };
+  const removeAt = (i: number) => {
+    if (lines.length <= 1) return;
+    focusAt.current = Math.max(0, i - 1);
+    onChange(lines.filter((_, k) => k !== i));
+  };
+
+  return lines.map((v, i) => (
+    <View key={i} style={styles.line}>
+      {bullet(i)}
+      <TextInput
+        ref={(el) => { refs.current[i] = el; }}
+        value={v}
+        onChangeText={(t) => onChange(lines.map((x, k) => (k === i ? t : x)))}
+        onSubmitEditing={() => insertAfter(i)}
+        onKeyPress={({ nativeEvent }) => { if (nativeEvent.key === 'Backspace' && v === '') removeAt(i); }}
+        submitBehavior="submit"
+        returnKeyType="next"
+        multiline={multiline}
+        placeholder={placeholder}
+        placeholderTextColor={C.muted}
+        style={styles.lineInput}
+      />
+    </View>
+  ));
 }
 
 function Prop({ icon, label, children }: { icon: IconName; label: string; children: ReactNode }) {

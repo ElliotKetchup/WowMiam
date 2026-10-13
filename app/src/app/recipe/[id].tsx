@@ -84,7 +84,7 @@ export default function RecipeScreen() {
                 <Icon name="remove" />
               </Pressable>
               <Animated.View key={serves} entering={FadeIn.duration(140)} style={styles.stepVal}>
-                <Txt font="bold" size={14}>{serves} pers.</Txt>
+                <Txt font="bold" size={14} style={{ fontVariant: ['tabular-nums'] }}>{serves} pers.</Txt>
               </Animated.View>
               <Pressable onPress={() => { tap(); setServes(recipe.id, Math.min(12, serves + 1)); }} style={styles.stepBtn} accessibilityLabel="Plus de personnes">
                 <Icon name="add" />
@@ -154,7 +154,8 @@ const styles = StyleSheet.create({
   blockHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   stepper: { flexDirection: 'row', alignItems: 'center', overflow: 'hidden' },
   stepBtn: { width: 40, height: 38, alignItems: 'center', justifyContent: 'center' },
-  stepVal: { height: 38, paddingHorizontal: 10, justifyContent: 'center', borderLeftWidth: 2, borderRightWidth: 2, borderColor: C.ink },
+  // Fixed width so − and + never move when the count goes from 9 to 10.
+  stepVal: { width: 78, height: 38, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 2, borderRightWidth: 2, borderColor: C.ink },
   ing: { flexDirection: 'row', alignItems: 'center', minHeight: 46, borderRadius: 10, paddingHorizontal: 2 },
   box: { width: 24, height: 24, borderWidth: 2, borderColor: C.ink, borderRadius: 6, backgroundColor: C.tile, marginRight: 10, alignItems: 'center', justifyContent: 'center' },
   step: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', marginBottom: 14 },

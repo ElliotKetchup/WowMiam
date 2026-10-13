@@ -34,4 +34,12 @@ export const F = {
   bold: 'Onest_700Bold',
 } as const;
 
+/** Mixes a hex colour toward ink; used for the back panel of a folder pocket. */
+export function shade(hex: string, amount = 0.2): string {
+  const mix = (a: number, b: number) => Math.round(a + (b - a) * amount);
+  const [r, g, b] = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16));
+  const [ir, ig, ib] = [1, 3, 5].map((i) => Number.parseInt(C.ink.slice(i, i + 2), 16));
+  return `#${[mix(r, ir), mix(g, ig), mix(b, ib)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
 export const hardShadow = (offset: number, color: string = C.ink): string => `${offset}px ${offset}px 0px ${color}`;

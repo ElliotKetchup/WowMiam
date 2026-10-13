@@ -151,6 +151,26 @@ export const slapIn = (delay = 0) =>
     .duration(340)
     .delay(delay);
 
+/**
+ * Folder stickers come *out* of the pocket instead: they rise from behind the folder front while
+ * swinging on an arc, as if turning on a wheel whose hub sits far below them.
+ */
+export const riseIn = (delay = 0, size = 100) => {
+  const hub = size * 1.4; // distance from the sticker centre down to the arc's pivot
+  const at = (deg: number, lift: number) => {
+    const rad = (deg * Math.PI) / 180;
+    return [{ translateX: hub * Math.sin(rad) }, { translateY: lift + hub * (1 - Math.cos(rad)) }, { rotate: `${deg}deg` }];
+  };
+  return new Keyframe({
+    0: { transform: at(-28, size * 1.05) },
+    35: { transform: at(-12, size * 0.45), easing: Easing.out(Easing.quad) },
+    72: { transform: at(3, -size * 0.03), easing: Easing.out(Easing.cubic) },
+    100: { transform: at(0, 0), easing: Easing.inOut(Easing.quad) },
+  })
+    .duration(620)
+    .delay(delay);
+};
+
 /** The "Enregistré !" stamp: same press-flat landing as a sticker. */
 export const stampIn = new Keyframe({
   0: { opacity: 0, transform: [{ scale: 1.7 }, { rotate: '-2deg' }] },
@@ -164,10 +184,12 @@ type StickerProps = {
   style?: StyleProp<ViewStyle>;
   delay?: number;
   animate?: boolean;
+  /** `slap`: dropped onto a tile. `rise`: pulled out of a folder pocket. */
+  enter?: 'slap' | 'rise';
 };
 
 /** A dish sticker. Bundled cut-outs carry their own white die-cut edge; user photos become round stickers. */
-export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = true }: StickerProps) {
+export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = true, enter = 'slap' }: StickerProps) {
   let content: ReactNode;
   if (recipe.photoUri) {
     const d = size * 0.86;
@@ -191,7 +213,7 @@ export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = 
   }
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, transform: [{ rotate: `${rotate}deg` }] }, style]}>
-      <Animated.View entering={animate ? slapIn(delay) : undefined} style={{ flex: 1 }}>
+      <Animated.View entering={!animate ? undefined : enter === 'rise' ? riseIn(delay, size) : slapIn(delay)} style={{ flex: 1 }}>
         {content}
       </Animated.View>
     </View>

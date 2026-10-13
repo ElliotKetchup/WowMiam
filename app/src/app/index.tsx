@@ -8,7 +8,7 @@ import { FolderSheet } from '@/components/sheets';
 import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, StatusShade, STICKER_LAG, Sticker, tap, Txt } from '@/components/ui';
 import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel, folderSwatch } from '@/lib/data';
 import { activeCount, selectResults, useStore } from '@/lib/store';
-import { C, FOLDER_SWATCHES, type Swatch, TILE_SWATCHES, fg } from '@/lib/theme';
+import { C, FOLDER_SWATCHES, type Swatch, TILE_SWATCHES, fg, hardShadow, shade } from '@/lib/theme';
 
 type Tab = 'home' | 'folders';
 type Slot = 'w' | 't' | 'n' | 'ws';
@@ -346,7 +346,7 @@ function FoldersView({ top }: { top: number }) {
           <Icon name="create-new-folder" />
         </Brut>
       </View>
-      <View style={{ marginTop: 44, marginHorizontal: 16, gap: 34 }}>
+      <View style={{ marginTop: 40, marginHorizontal: 16, gap: 22 }}>
         {first ? <FolderTile f={first} index={idx++} wide byId={byId} /> : <NewFolderTile index={0} onPress={open} />}
         {rows.map((row) => (
           <View key={row[0] === 'new' ? 'new' : row[0].id} style={{ flexDirection: 'row', gap: 14 }}>
@@ -364,47 +364,70 @@ function FoldersView({ top }: { top: number }) {
   );
 }
 
-/** Folder cards grow with a long name, up to a clamp of 3–4 lines. */
+/** Space above the folder the pocket keeps for stickers that stick out of it. */
+const HEADROOM = 140;
+const POCKET = {
+  wide: { height: 200, lip: 74, stickers: [{ size: 132, right: 108, top: -18, rotate: -10 }, { size: 140, right: 2, top: -10, rotate: 9 }] },
+  small: { height: 176, lip: 66, stickers: [{ size: 108, right: 2, top: -10, rotate: 10 }] },
+} as const;
+
+/**
+ * A folder is a pocket: back panel with its tab, then the stickers, then the front panel carrying the name.
+ * Stickers rise out from behind the front; below its rim they are clipped to the pocket.
+ */
 function FolderTile({ f, index, wide = false, byId }: { f: Folder; index: number; wide?: boolean; byId: Map<string, Recipe> }) {
   const sw = folderSwatch(f, index);
   const color = C[sw];
+  const back = shade(color, 0.2);
   const tc = fg(sw);
-  const covers = f.ids.map((id) => byId.get(id)).filter((r): r is Recipe => !!r && !!(r.sticker || r.photoUri)).slice(0, wide ? 2 : 1);
+  const spec = wide ? POCKET.wide : POCKET.small;
+  const covers = f.ids.map((id) => byId.get(id)).filter((r): r is Recipe => !!r && !!(r.sticker || r.photoUri)).slice(0, spec.stickers.length);
   const delay = index * 70;
   return (
-    <Animated.View entering={popIn(delay)} style={[{ minHeight: wide ? 156 : 140, zIndex: index }, wide ? null : { flex: 1 }]}>
-      <Brut
-        color={color}
-        radius={20}
-        style={{ flexGrow: 1, padding: 14, paddingTop: 16, borderTopLeftRadius: 4, overflow: 'visible' }}
-        onPress={() => router.push({ pathname: '/folder/[id]', params: { id: f.id, color: sw } })}>
-        <View style={[styles.folderTab, { backgroundColor: color }]} />
-        <View style={[styles.folderTabCover, { backgroundColor: color }]} />
-        <Display size={wide ? 30 : 20} color={tc} style={{ maxWidth: covers.length ? (wide ? '44%' : '58%') : '100%', zIndex: 2 }} numberOfLines={wide ? 3 : 4}>
-          {f.name}
-        </Display>
-        <View style={{ marginTop: 'auto', paddingTop: 10, flexDirection: 'row', alignItems: 'baseline', gap: 6, zIndex: 2 }}>
-          <Display size={22} color={tc}>{f.ids.length}</Display>
-          <Txt font="semi" size={13} color={tc}>recette{f.ids.length > 1 ? 's' : ''}</Txt>
-        </View>
-        {covers.map((r, i) => (
-          <Sticker
-            key={r.id}
-            recipe={r}
-            size={wide ? (i ? 120 : 116) : 88}
-            rotate={i ? 10 : -12}
-            style={wide ? (i ? { right: -12, top: 26 } : { right: 78, top: -34 }) : { right: -10, top: -28 }}
-            delay={delay + STICKER_LAG + i * 110}
-          />
-        ))}
-      </Brut>
+    <Animated.View entering={popIn(delay)} style={[{ zIndex: index }, wide ? null : { flex: 1 }]}>
+      <Pressable
+        onPress={() => { tap(); router.push({ pathname: '/folder/[id]', params: { id: f.id, color: sw } }); }}
+        accessibilityRole="button"
+        accessibilityLabel={`${f.name}, ${f.ids.length} recette${f.ids.length > 1 ? 's' : ''}`}>
+        {({ pressed }) => (
+          <View style={{ minHeight: spec.height, transform: pressed ? [{ translateX: 3 }, { translateY: 3 }] : [] }}>
+            <View style={[styles.pocketBack, { backgroundColor: back, boxShadow: hardShadow(pressed ? 1 : 4) }]}>
+              <View style={[styles.folderTab, { backgroundColor: back }]} />
+              <View style={[styles.folderTabCover, { backgroundColor: back }]} />
+            </View>
+            <View pointerEvents="none" style={[styles.pocket, { top: -HEADROOM }]}>
+              {covers.map((r, i) => {
+                const at = spec.stickers[i];
+                return (
+                  <Sticker
+                    key={r.id}
+                    recipe={r}
+                    size={at.size}
+                    rotate={at.rotate}
+                    style={{ right: at.right + 6, top: HEADROOM + at.top }}
+                    enter="rise"
+                    delay={delay + STICKER_LAG + i * 120}
+                  />
+                );
+              })}
+            </View>
+            <View style={[styles.pocketFront, { marginTop: spec.lip, minHeight: spec.height - spec.lip, backgroundColor: color }]}>
+              <Display size={wide ? 28 : 20} color={tc} numberOfLines={wide ? 2 : 3}>{f.name}</Display>
+              <View style={{ marginTop: 'auto', paddingTop: 8, flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+                <Display size={22} color={tc}>{f.ids.length}</Display>
+                <Txt font="semi" size={13} color={tc}>recette{f.ids.length > 1 ? 's' : ''}</Txt>
+              </View>
+            </View>
+          </View>
+        )}
+      </Pressable>
     </Animated.View>
   );
 }
 
 function NewFolderTile({ index, onPress }: { index: number; onPress: () => void }) {
   return (
-    <Animated.View entering={popIn(index * 70)} style={{ flex: 1, minHeight: 140 }}>
+    <Animated.View entering={popIn(index * 70)} style={{ flex: 1, minHeight: POCKET.small.height }}>
       <Pressable onPress={() => { tap(); onPress(); }} style={({ pressed }) => [styles.newFolder, pressed && { backgroundColor: 'rgba(42,21,48,0.06)' }]}>
         <Icon name="add" size={30} />
         <Display size={18}>Nouveau dossier</Display>
@@ -461,6 +484,10 @@ const styles = StyleSheet.create({
   segThumb: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 72, backgroundColor: C.ink },
   segBtn: { width: 72, height: 32, alignItems: 'center', justifyContent: 'center' },
   empty: { margin: 16, marginTop: 30, padding: 24, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: C.ink, alignItems: 'center' },
+  pocketBack: { position: 'absolute', top: 18, left: 0, right: 0, bottom: 0, borderWidth: 2, borderColor: C.ink, borderRadius: 20, borderTopLeftRadius: 4 },
+  // Overhang allowed above the rim; clipped at the sides and above the front's rounded bottom corners.
+  pocket: { position: 'absolute', left: -6, right: -6, bottom: 22, overflow: 'hidden' },
+  pocketFront: { borderWidth: 2, borderColor: C.ink, borderTopLeftRadius: 16, borderTopRightRadius: 16, borderBottomLeftRadius: 20, borderBottomRightRadius: 20, padding: 14, paddingTop: 12 },
   folderTab: { position: 'absolute', left: -2, top: -18, width: 78, height: 18, borderWidth: 2, borderBottomWidth: 0, borderColor: C.ink, borderTopLeftRadius: 10, borderTopRightRadius: 14 },
   folderTabCover: { position: 'absolute', left: 0, top: -2, width: 74, height: 4 },
   nav: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingTop: 10, paddingHorizontal: 28, backgroundColor: C.paper, borderTopWidth: 2, borderColor: C.ink, flexDirection: 'row', alignItems: 'center' },
