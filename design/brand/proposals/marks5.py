@@ -46,12 +46,16 @@ def vague() -> Proposal:
                     frame(body, AMBER))
 
 
+def miroir_letters(w: str = PINK, m: str = AMBER) -> str:
+    """The M is the fluid W turned upside down (the chosen Wow Miam ! mark)."""
+    place = "translate(-2 26) scale(.92) translate(22 0)"
+    return (f'<g transform="{place}">{fluid_w(w)}</g>'
+            f'<g transform="rotate(180 256 256) {place}">{fluid_w(m)}</g>')
+
+
 def miroir() -> Proposal:
-    """The M is the fluid W turned upside down."""
-    w = f'<g transform="translate(-2 26) scale(.92) translate(22 0)">{fluid_w(PINK)}</g>'
-    m = f'<g transform="rotate(180 256 256) translate(-2 26) scale(.92) translate(22 0)">{fluid_w(AMBER)}</g>'
     return Proposal("miroir", "Miroir", "Le M, c’est le W retourné : un seul dessin qui se répond, comme deux cuillères.",
-                    frame(w + m, INK))
+                    frame(miroir_letters(), INK))
 
 
 def bouchee() -> Proposal:
