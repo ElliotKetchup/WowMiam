@@ -7,7 +7,8 @@ import { StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, SlideInRight, SlideOutLeft } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Display, Icon, STICKER_LAG, Sticker, Txt } from '@/components/ui';
+import { Brut, BrutBox, Display, Icon, STICKER_LAG, Txt } from '@/components/ui';
+import { Sticker } from '@/components/sticker';
 import { useStore } from '@/lib/store';
 import { C, hardShadow } from '@/lib/theme';
 

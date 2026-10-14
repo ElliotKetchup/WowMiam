@@ -6,7 +6,6 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Platform, Pressable, type PressableProps, type StyleProp, Text, type TextProps, View, type ViewStyle } from 'react-native';
 import Animated, { Easing, FadeIn, Keyframe } from 'react-native-reanimated';
 
-import { type Recipe, STICKERS } from '@/lib/data';
 import { C, F, hardShadow } from '@/lib/theme';
 
 export type IconName = ComponentProps<typeof MaterialIcons>['name'];
@@ -124,7 +123,7 @@ export function Chip({ label, color = C.tile, textColor = C.ink, icon, trailing,
 
 /**
  * Motion vocabulary. Only two things bounce in the app, and barely:
- * tiles and folders `popIn`; stickers `slapIn` (dropped from above, pressed flat, no rebound).
+ * tiles and folders `popIn`; stickers are applied like real stickers (see components/sticker.tsx).
  * Everything else fades or slides on a plain timing curve.
  */
 export const popIn = (delay = 0) =>
@@ -141,15 +140,6 @@ export const popIn = (delay = 0) =>
 
 /** Lands roughly when the tile it sits on has settled. */
 export const STICKER_LAG = 300;
-
-export const slapIn = (delay = 0) =>
-  new Keyframe({
-    0: { opacity: 0, transform: [{ translateY: -90 }, { scale: 1.22 }, { rotate: '8deg' }] },
-    20: { opacity: 1, transform: [{ translateY: -86 }, { scale: 1.21 }, { rotate: '7.6deg' }] },
-    100: { opacity: 1, transform: [{ translateY: 0 }, { scale: 1 }, { rotate: '0deg' }], easing: Easing.in(Easing.cubic) },
-  })
-    .duration(340)
-    .delay(delay);
 
 /**
  * Folder stickers come *out* of the pocket instead: they rise from behind the folder front while
@@ -176,49 +166,6 @@ export const stampIn = new Keyframe({
   0: { opacity: 0, transform: [{ scale: 1.7 }, { rotate: '-2deg' }] },
   100: { opacity: 1, transform: [{ scale: 1 }, { rotate: '-8deg' }], easing: Easing.in(Easing.cubic) },
 }).duration(260);
-
-type StickerProps = {
-  recipe: Pick<Recipe, 'sticker' | 'photoUri' | 'name'>;
-  size: number;
-  rotate?: number;
-  style?: StyleProp<ViewStyle>;
-  delay?: number;
-  animate?: boolean;
-  /** `slap`: dropped onto a tile. `rise`: pulled out of a folder pocket. */
-  enter?: 'slap' | 'rise';
-};
-
-/** A dish sticker. Bundled cut-outs carry their own white die-cut edge; user photos become round stickers. */
-export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = true, enter = 'slap' }: StickerProps) {
-  let content: ReactNode;
-  if (recipe.photoUri) {
-    const d = size * 0.86;
-    content = (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: d, height: d, borderRadius: d / 2, borderWidth: Math.max(4, d * 0.05), borderColor: '#FFFFFF', overflow: 'hidden', boxShadow: '0px 6px 10px rgba(42,21,48,0.3)' }}>
-          <Image source={{ uri: recipe.photoUri }} style={{ width: '100%', height: '100%' }} contentFit="cover" />
-        </View>
-      </View>
-    );
-  } else if (recipe.sticker) {
-    content = <Image source={STICKERS[recipe.sticker]} style={{ width: '100%', height: '100%' }} contentFit="contain" />;
-  } else {
-    content = (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <View style={{ width: size * 0.6, height: size * 0.6, borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', borderColor: C.ink, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.5)' }}>
-          <Display size={size * 0.28}>{recipe.name.charAt(0).toUpperCase()}</Display>
-        </View>
-      </View>
-    );
-  }
-  return (
-    <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, transform: [{ rotate: `${rotate}deg` }] }, style]}>
-      <Animated.View entering={!animate ? undefined : enter === 'rise' ? riseIn(delay, size) : slapIn(delay)} style={{ flex: 1 }}>
-        {content}
-      </Animated.View>
-    </View>
-  );
-}
 
 /** Paper band behind the status bar so scrolled content doesn't run under the clock. */
 export function StatusShade({ height }: { height: number }) {

@@ -5,7 +5,8 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FolderSheet, RecipePickerSheet } from '@/components/sheets';
-import { Brut, BrutBox, Chip, Display, Icon, StatusShade, STICKER_LAG, Sticker, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, StatusShade, STICKER_LAG, Txt } from '@/components/ui';
+import { Sticker } from '@/components/sticker';
 import type { Recipe } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';

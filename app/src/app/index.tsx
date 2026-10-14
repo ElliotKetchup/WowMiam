@@ -5,7 +5,8 @@ import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition, useAnimatedSty
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { FolderSheet } from '@/components/sheets';
-import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, StatusShade, STICKER_LAG, Sticker, tap, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, StatusShade, STICKER_LAG, tap, Txt } from '@/components/ui';
+import { Sticker } from '@/components/sticker';
 import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel, folderSwatch } from '@/lib/data';
 import { activeCount, selectResults, useStore } from '@/lib/store';
 import { C, FOLDER_SWATCHES, type Swatch, TILE_SWATCHES, fg, hardShadow, shade } from '@/lib/theme';

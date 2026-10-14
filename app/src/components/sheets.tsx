@@ -4,7 +4,8 @@ import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, St
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, Display, Icon, Sticker, tap, Txt } from '@/components/ui';
+import { Brut, Display, Icon, tap, Txt } from '@/components/ui';
+import { Sticker } from '@/components/sticker';
 import type { Folder } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, F, FOLDER_SWATCHES, type Swatch, fg } from '@/lib/theme';

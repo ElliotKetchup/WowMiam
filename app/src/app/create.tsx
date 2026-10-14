@@ -7,7 +7,8 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleShee
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Chip, Display, Icon, type IconName, stampIn, Sticker, tap, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, type IconName, stampIn, tap, Txt } from '@/components/ui';
+import { Sticker } from '@/components/sticker';
 import { CATALOG, ingredientLine, type Kind, parseIngredient, type Recipe, type Step } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, F } from '@/lib/theme';

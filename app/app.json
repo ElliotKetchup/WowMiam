@@ -16,7 +16,7 @@
       "package": "com.elliotketchup.wowmiam",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#007D72",
+        "backgroundColor": "#2A1530",
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png"
       },

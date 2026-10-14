@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { HoloProvider } from '@/components/holo';
 import { C } from '@/lib/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -26,7 +27,7 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <>
+    <HoloProvider>
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: C.paper }, animation: 'slide_from_right' }}>
         <Stack.Screen name="index" />
@@ -35,6 +36,6 @@ export default function RootLayout() {
         <Stack.Screen name="folder/[id]" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="create" options={{ animation: 'slide_from_bottom' }} />
       </Stack>
-    </>
+    </HoloProvider>
   );
 }

@@ -4,7 +4,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Brut, BrutBox, Chip, Display, Icon, StatusShade, Sticker, tap, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, StatusShade, tap, Txt } from '@/components/ui';
+import { Sticker } from '@/components/sticker';
 import { addedLabel, formatQty } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
