@@ -18,16 +18,6 @@ export const STICKERS = {
 } as const;
 export type StickerKey = keyof typeof STICKERS;
 
-/** Alpha masks for the holographic foil: full on the white die-cut edge, faint over the dish (design/holo_masks.py). */
-export const HOLO_MASKS: Record<StickerKey, number> = {
-  'pizza-wrap': require('@/assets/stickers/holo/pizza-wrap.png'),
-  'salade-endives': require('@/assets/stickers/holo/salade-endives.png'),
-  'aubergines-pizza': require('@/assets/stickers/holo/aubergines-pizza.png'),
-  'pates-carottes': require('@/assets/stickers/holo/pates-carottes.png'),
-  'salade-verte': require('@/assets/stickers/holo/salade-verte.png'),
-  'salade-courgettes': require('@/assets/stickers/holo/salade-courgettes.png'),
-};
-
 export interface Recipe {
   id: string;
   name: string;
