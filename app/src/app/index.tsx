@@ -8,7 +8,7 @@ import { AccountButton, AccountSheet } from '@/components/account-sheet';
 import { FolderSheet } from '@/components/sheets';
 import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, StatusShade, STICKER_LAG, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
-import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel, folderSwatch } from '@/lib/data';
+import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel, folderSwatch, photoOf } from '@/lib/data';
 import { activeCount, selectResults, useStore } from '@/lib/store';
 import { C, FOLDER_SWATCHES, type Swatch, TILE_SWATCHES, fg, hardShadow, shade } from '@/lib/theme';
 
@@ -381,7 +381,7 @@ function FolderTile({ f, index, wide = false, byId }: { f: Folder; index: number
   const back = shade(color, 0.2);
   const tc = fg(sw);
   const spec = wide ? POCKET.wide : POCKET.small;
-  const covers = f.ids.map((id) => byId.get(id)).filter((r): r is Recipe => !!r && !!(r.sticker || r.photoUri)).slice(0, spec.stickers.length);
+  const covers = f.ids.map((id) => byId.get(id)).filter((r): r is Recipe => !!r && !!(r.sticker || photoOf(r))).slice(0, spec.stickers.length);
   const delay = index * 70;
   return (
     <Animated.View entering={popIn(delay)} style={[{ zIndex: index }, wide ? null : { flex: 1 }]}>

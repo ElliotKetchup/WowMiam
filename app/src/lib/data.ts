@@ -22,7 +22,12 @@ export interface Recipe {
   id: string;
   name: string;
   sticker?: StickerKey;
+  /** The photo file on this phone. */
   photoUri?: string;
+  /** The compressed copy in Cloud Storage, shown on phones that don't have the file. */
+  photoUrl?: string;
+  /** Which local file `photoUrl` was made from (its file name), so a replaced photo gets re-uploaded. */
+  photoKey?: string;
   type: string;
   diets: string[];
   tools: string[];
@@ -154,5 +159,8 @@ export function parseIngredient(line: string): Ingredient {
   const unit = UNITS.find((u) => rest.toLowerCase().startsWith(`${u} `) || rest.toLowerCase() === u) ?? '';
   return [qty, unit, rest.slice(unit.length).trim()];
 }
+
+/** What to display for a user photo: the local file first, else the synced copy. */
+export const photoOf = (r: Pick<Recipe, 'photoUri' | 'photoUrl'>): string | undefined => r.photoUri ?? r.photoUrl;
 
 export const normalize = (s: string): string => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();

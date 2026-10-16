@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Brut, BrutBox, Chip, Display, Icon, type IconName, stampIn, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
-import { CATALOG, ingredientLine, type Kind, parseIngredient, type Recipe, type Step } from '@/lib/data';
+import { CATALOG, ingredientLine, type Kind, parseIngredient, photoOf, type Recipe, type Step } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, F } from '@/lib/theme';
 
@@ -44,7 +44,7 @@ export default function EditorScreen() {
   const deleteRecipe = useStore((s) => s.deleteRecipe);
   const editing = !!existing;
   const [id] = useState(() => existing?.id ?? newId());
-  const [photo, setPhoto] = useState<string | null>(existing?.photoUri ?? null);
+  const [photo, setPhoto] = useState<string | null>(existing ? photoOf(existing) ?? null : null);
   const [freshPhoto, setFreshPhoto] = useState(false);
   const [name, setName] = useState(existing?.name ?? '');
   const [note, setNote] = useState(existing?.note ?? '');
@@ -92,7 +92,10 @@ export default function EditorScreen() {
       id,
       name: name.trim(),
       sticker: existing?.sticker,
-      photoUri: photo ?? undefined,
+      // A synced photo shown as-is stays remote; a newly picked one becomes the local file (and is uploaded again).
+      photoUri: photo && photo !== existing?.photoUrl ? photo : existing?.photoUri,
+      photoUrl: existing?.photoUrl,
+      photoKey: existing?.photoKey,
       type,
       diets: picked.diet,
       tools: picked.tool,

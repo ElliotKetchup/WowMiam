@@ -64,7 +64,7 @@ export function AccountSheet({ visible, onClose }: { visible: boolean; onClose: 
         </Brut>
       )}
       <Txt size={12} color={C.muted} style={{ marginTop: 12, textAlign: 'center' }}>
-        {account ? 'Tes recettes restent sur ce téléphone après la déconnexion.' : 'Les photos restent sur ce téléphone pour l’instant.'}
+        {account ? 'Tes recettes restent sur ce téléphone après la déconnexion.' : 'Tes photos sont compressées puis sauvegardées avec les recettes.'}
       </Txt>
     </Sheet>
   );

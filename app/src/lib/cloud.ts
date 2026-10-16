@@ -1,7 +1,8 @@
 /**
  * Optional Google account + Firestore sync. The app stays local-first: without an account nothing changes.
  * Signed in, recipes and folders live under users/{uid}/ and every local edit is mirrored there;
- * edits from another phone arrive through snapshot listeners. Photos stay on the phone for now.
+ * edits from another phone arrive through snapshot listeners. User photos are compressed (~1080 px JPEG)
+ * and uploaded to Cloud Storage under users/{uid}/photos/, and other phones show that copy.
  */
 import {
   GoogleAuthProvider,
@@ -21,7 +22,9 @@ import {
   onSnapshot,
   writeBatch,
 } from '@react-native-firebase/firestore';
+import { deleteObject, getDownloadURL, getStorage, putFile, ref } from '@react-native-firebase/storage';
 import { GoogleSignin, isErrorWithCode, statusCodes } from '@react-native-google-signin/google-signin';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
 import { useAccount } from './account';
 import { type Folder, type Recipe, SEED_FOLDERS, SEED_RECIPE_IDS } from './data';
@@ -60,6 +63,41 @@ function recipeFromCloud(data: DocumentData, localPhoto: string | undefined): Re
 }
 
 const folderToCloud = (f: Folder): Folder => defined(f);
+
+/* ----------------------------------------------------------------- photos */
+
+const PHOTO_WIDTH = 1080;
+const PHOTO_QUALITY = 0.72;
+
+const keyOf = (uri: string): string => uri.split('/').pop() ?? uri;
+const photoPath = (uid: string, recipeId: string, key: string): string => `users/${uid}/photos/${recipeId}/${key}.jpg`;
+const needsUpload = (r: Recipe): boolean => !!r.photoUri?.startsWith('file:') && keyOf(r.photoUri) !== r.photoKey;
+
+let photoQueue: Promise<void> = Promise.resolve();
+
+/** One upload at a time; a failed one is retried on the next sync since its key still won't match. */
+function queuePhotos(uid: string, recipes: readonly Recipe[]): void {
+  for (const r of recipes.filter(needsUpload)) {
+    photoQueue = photoQueue.then(() => uploadPhoto(uid, r.id)).catch((e: unknown) => fail(e, 'Photo non envoyée'));
+  }
+}
+
+async function uploadPhoto(uid: string, recipeId: string): Promise<void> {
+  const r = useStore.getState().recipes.find((x) => x.id === recipeId);
+  if (!r?.photoUri || !needsUpload(r)) return;
+  const key = keyOf(r.photoUri);
+  const rendered = await ImageManipulator.manipulate(r.photoUri).resize({ width: PHOTO_WIDTH }).renderAsync();
+  const jpeg = await rendered.saveAsync({ compress: PHOTO_QUALITY, format: SaveFormat.JPEG });
+  const target = ref(getStorage(), photoPath(uid, recipeId, key));
+  await putFile(target, jpeg.uri, { contentType: 'image/jpeg', cacheControl: 'public, max-age=31536000' });
+  const url = await getDownloadURL(target);
+  // A plain local edit: the store diff below writes photoUrl/photoKey to Firestore.
+  useStore.setState((s) => ({ recipes: s.recipes.map((x) => (x.id === recipeId ? { ...x, photoUrl: url, photoKey: key } : x)) }));
+  if (r.photoKey) await deletePhoto(uid, recipeId, r.photoKey);
+}
+
+const deletePhoto = (uid: string, recipeId: string, key: string): Promise<void> =>
+  deleteObject(ref(getStorage(), photoPath(uid, recipeId, key))).catch(() => undefined);
 
 /* ------------------------------------------------------------- the engine */
 
@@ -121,6 +159,7 @@ async function startSync(user: User): Promise<void> {
 
   withRemote(() => useStore.setState({ recipes: r.merged, folders: f.merged }));
   await commit(recipesCol, foldersCol, r.upload, f.upload, [], []);
+  queuePhotos(user.uid, r.merged);
 
   const unsubRecipes = onSnapshot(recipesCol, (snap) => {
     const local = photoOf();
@@ -136,12 +175,15 @@ async function startSync(user: User): Promise<void> {
     const changed = <T extends { id: string }>(a: T[], b: T[]) => {
       const before = new Map(b.map((x) => [x.id, x]));
       const ids = new Set(a.map((x) => x.id));
-      return { put: a.filter((x) => before.get(x.id) !== x), gone: b.filter((x) => !ids.has(x.id)).map((x) => x.id) };
+      return { put: a.filter((x) => before.get(x.id) !== x), gone: b.filter((x) => !ids.has(x.id)) };
     };
     const rc = next.recipes !== prev.recipes ? changed(next.recipes, prev.recipes) : { put: [], gone: [] };
     const fc = next.folders !== prev.folders ? changed(next.folders, prev.folders) : { put: [], gone: [] };
     if (rc.put.length || rc.gone.length || fc.put.length || fc.gone.length) {
-      commit(recipesCol, foldersCol, rc.put, fc.put, rc.gone, fc.gone).catch(fail);
+      const ids = (xs: { id: string }[]) => xs.map((x) => x.id);
+      commit(recipesCol, foldersCol, rc.put, fc.put, ids(rc.gone), ids(fc.gone)).catch(fail);
+      queuePhotos(user.uid, rc.put);
+      rc.gone.forEach((g) => g.photoKey && deletePhoto(user.uid, g.id, g.photoKey));
     }
   });
 
@@ -170,9 +212,9 @@ async function commit(
   await batch.commit();
 }
 
-function fail(e: unknown): void {
+function fail(e: unknown, context?: string): void {
   const message = e instanceof Error ? e.message : String(e);
-  useAccount.setState({ status: 'error', error: message });
+  useAccount.setState({ status: 'error', error: context ? `${context} : ${message}` : message });
 }
 
 /* ------------------------------------------------------------------- auth */

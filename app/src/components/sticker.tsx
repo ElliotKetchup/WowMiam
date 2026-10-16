@@ -7,7 +7,7 @@ import { type StyleProp, StyleSheet, View, type ViewStyle } from 'react-native';
 import Animated, { Easing, Keyframe } from 'react-native-reanimated';
 
 import { Display, riseIn } from '@/components/ui';
-import { type Recipe, STICKERS } from '@/lib/data';
+import { photoOf, type Recipe, STICKERS } from '@/lib/data';
 import { C } from '@/lib/theme';
 
 const STICK_MS = 760;
@@ -37,7 +37,7 @@ const liftShadowIn = (delay: number) =>
     .delay(delay);
 
 type Face = 'bundled' | 'photo' | 'placeholder';
-type StickerRecipe = Pick<Recipe, 'sticker' | 'photoUri' | 'name'>;
+type StickerRecipe = Pick<Recipe, 'sticker' | 'photoUri' | 'photoUrl' | 'name'>;
 
 type StickerProps = {
   recipe: StickerRecipe;
@@ -51,7 +51,7 @@ type StickerProps = {
 };
 
 export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = true, enter = 'stick' }: StickerProps) {
-  const face: Face = recipe.photoUri ? 'photo' : recipe.sticker ? 'bundled' : 'placeholder';
+  const face: Face = photoOf(recipe) ? 'photo' : recipe.sticker ? 'bundled' : 'placeholder';
   const entering = !animate ? undefined : enter === 'rise' ? riseIn(delay, size) : stickIn(delay);
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, transform: [{ rotate: `${rotate}deg` }] }, style]}>
@@ -76,7 +76,7 @@ function FaceView({ recipe, face, size }: { recipe: StickerRecipe; face: Face; s
     return (
       <View style={styles.center}>
         <View style={{ width: d, height: d, borderRadius: d / 2, borderWidth: photoBorder(d), borderColor: '#FFFFFF', overflow: 'hidden', boxShadow: '0px 6px 10px rgba(42,21,48,0.3)' }}>
-          <Image source={{ uri: recipe.photoUri }} style={styles.fill} contentFit="cover" />
+          <Image source={{ uri: photoOf(recipe) }} style={styles.fill} contentFit="cover" cachePolicy="disk" />
         </View>
       </View>
     );

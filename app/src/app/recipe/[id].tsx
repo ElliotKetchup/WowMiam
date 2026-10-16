@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Brut, BrutBox, Chip, Display, Icon, StatusShade, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
-import { addedLabel, formatQty } from '@/lib/data';
+import { addedLabel, formatQty, photoOf } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
 
@@ -62,7 +62,7 @@ export default function RecipeScreen() {
         <BrutBox color={C[sw]} radius={24} style={styles.hero}>
           <Txt font="semi" size={13} color={fg(sw)} style={{ opacity: 0.85, marginBottom: 6 }}>{addedLabel(recipe.addedAt)}</Txt>
           <Display size={heroTitleSize(recipe.name)} color={fg(sw)} style={{ maxWidth: '58%' }} numberOfLines={5}>{recipe.name}</Display>
-          <Sticker key={recipe.photoUri ?? recipe.sticker} recipe={recipe} size={186} rotate={-12} style={{ right: -10, top: -40 }} delay={260} />
+          <Sticker key={photoOf(recipe) ?? recipe.sticker} recipe={recipe} size={186} rotate={-12} style={{ right: -10, top: -40 }} delay={260} />
         </BrutBox>
 
         <Animated.View entering={FadeInDown.delay(80).duration(260)} style={styles.chips}>

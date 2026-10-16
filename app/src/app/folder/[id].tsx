@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FolderSheet, RecipePickerSheet } from '@/components/sheets';
 import { Brut, BrutBox, Chip, Display, Icon, StatusShade, STICKER_LAG, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
-import type { Recipe } from '@/lib/data';
+import { photoOf, type Recipe } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
 
@@ -21,7 +21,7 @@ export default function FolderScreen() {
   if (!folder) return null;
   const sw: Swatch = folder.color ?? color ?? 'amber';
   const list = folder.ids.map((rid) => recipes.find((r) => r.id === rid)).filter((r): r is Recipe => !!r);
-  const cover = list.find((r) => r.sticker || r.photoUri);
+  const cover = list.find((r) => r.sticker || photoOf(r));
 
   return (
     <View style={{ flex: 1, backgroundColor: C.paper }}>

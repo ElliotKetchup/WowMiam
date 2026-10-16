@@ -1,0 +1,14 @@
+rules_version = '2';
+// Photos live at users/{uid}/photos/{recipeId}/{file}. Only their owner can read or change them,
+// and an upload must be an image under 1 MB (the app sends ~1080 px JPEGs of 150–300 KB).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid}/photos/{recipeId}/{file} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 1 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
