@@ -29,6 +29,8 @@ export interface Recipe {
   time: number;
   serves: number;
   addedAt: number;
+  /** Last local edit; set by the store and used to merge with the cloud copy. Absent on untouched seed recipes. */
+  updatedAt?: number;
   note: string;
   ingredients: Ingredient[];
   steps: Step[];
@@ -39,6 +41,7 @@ export interface Folder {
   name: string;
   ids: string[];
   color?: Swatch;
+  updatedAt?: number;
 }
 
 export const CATALOG: Record<Kind, readonly string[]> = {
@@ -96,6 +99,8 @@ export function seedRecipes(now: number = Date.now()): Recipe[] {
     },
   ];
 }
+
+export const SEED_RECIPE_IDS: ReadonlySet<string> = new Set(['pizza', 'endives', 'aubergines', 'pates', 'composee', 'courgettes']);
 
 export const SEED_FOLDERS: Folder[] = [
   { id: 'soirs', name: 'Soirs de semaine', ids: ['pizza', 'pates', 'aubergines'] },

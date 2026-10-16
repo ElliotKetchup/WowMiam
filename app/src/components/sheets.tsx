@@ -10,7 +10,7 @@ import type { Folder } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, F, FOLDER_SWATCHES, type Swatch, fg } from '@/lib/theme';
 
-function Sheet({ visible, onClose, title, children }: { visible: boolean; onClose: () => void; title: string; children: ReactNode }) {
+export function Sheet({ visible, onClose, title, children }: { visible: boolean; onClose: () => void; title: string; children: ReactNode }) {
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>

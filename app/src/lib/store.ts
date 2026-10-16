@@ -32,6 +32,8 @@ interface State {
   toggleInFolder: (folderId: string, recipeId: string) => void;
 }
 
+const stamp = <T extends object>(item: T): T & { updatedAt: number } => ({ ...item, updatedAt: Date.now() });
+
 const newFolderId = (): string => `f${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
 const DEFAULT_GROUPS: Groups = {
@@ -68,12 +70,12 @@ export const useStore = create<State>()(
         set((s) => {
           const exists = s.recipes.some((r) => r.id === recipe.id);
           return {
-            recipes: exists ? s.recipes.map((r) => (r.id === recipe.id ? recipe : r)) : [recipe, ...s.recipes],
+            recipes: exists ? s.recipes.map((r) => (r.id === recipe.id ? stamp(recipe) : r)) : [stamp(recipe), ...s.recipes],
             folders: s.folders.map((f) => {
               const has = f.ids.includes(recipe.id);
               const want = folderIds.includes(f.id);
               if (has === want) return f;
-              return { ...f, ids: want ? [recipe.id, ...f.ids] : f.ids.filter((x) => x !== recipe.id) };
+              return stamp({ ...f, ids: want ? [recipe.id, ...f.ids] : f.ids.filter((x) => x !== recipe.id) });
             }),
           };
         }),
@@ -82,21 +84,21 @@ export const useStore = create<State>()(
           const { [id]: _gone, ...serves } = s.serves;
           return {
             recipes: s.recipes.filter((r) => r.id !== id),
-            folders: s.folders.map((f) => (f.ids.includes(id) ? { ...f, ids: f.ids.filter((x) => x !== id) } : f)),
+            folders: s.folders.map((f) => (f.ids.includes(id) ? stamp({ ...f, ids: f.ids.filter((x) => x !== id) }) : f)),
             serves,
           };
         }),
       addFolder: (name, color) => {
         const id = newFolderId();
-        set({ folders: [...get().folders, { id, name, color, ids: [] }] });
+        set({ folders: [...get().folders, stamp({ id, name, color, ids: [] as string[] })] });
         return id;
       },
-      updateFolder: (id, patch) => set((s) => ({ folders: s.folders.map((f) => (f.id === id ? { ...f, ...patch } : f)) })),
+      updateFolder: (id, patch) => set((s) => ({ folders: s.folders.map((f) => (f.id === id ? stamp({ ...f, ...patch }) : f)) })),
       deleteFolder: (id) => set((s) => ({ folders: s.folders.filter((f) => f.id !== id) })),
       toggleInFolder: (folderId, recipeId) =>
         set((s) => ({
           folders: s.folders.map((f) =>
-            f.id !== folderId ? f : { ...f, ids: f.ids.includes(recipeId) ? f.ids.filter((x) => x !== recipeId) : [recipeId, ...f.ids] },
+            f.id !== folderId ? f : stamp({ ...f, ids: f.ids.includes(recipeId) ? f.ids.filter((x) => x !== recipeId) : [recipeId, ...f.ids] }),
           ),
         })),
     }),

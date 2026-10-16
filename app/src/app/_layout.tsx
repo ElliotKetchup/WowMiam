@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { UpdateBanner } from '@/components/update-banner';
+import { initCloud } from '@/lib/cloud';
 import { C } from '@/lib/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -23,6 +24,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync().catch(() => undefined);
   }, [loaded]);
+
+  useEffect(() => initCloud(), []);
 
   if (!loaded) return null;
 

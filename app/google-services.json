@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "64817728713",
+    "project_id": "wowmiam-2fa59",
+    "storage_bucket": "wowmiam-2fa59.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64817728713:android:4c80e4185206b2bc07d118",
+        "android_client_info": {
+          "package_name": "com.elliotketchup.wowmiam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "64817728713-ekro177fp6m0ohi1k5hbuh1ds99h80ab.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.elliotketchup.wowmiam",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "64817728713-lt6tnbn7lv1ucm9cqnbb6nq03aoro049.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQzW0ZGADAGe4-08j3A0nadSo90ZNnkOc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "64817728713-lt6tnbn7lv1ucm9cqnbb6nq03aoro049.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

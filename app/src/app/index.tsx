@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AccountButton, AccountSheet } from '@/components/account-sheet';
 import { FolderSheet } from '@/components/sheets';
 import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, StatusShade, STICKER_LAG, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
@@ -54,6 +55,7 @@ export default function Home() {
 
 function HomeView({ top, onOpenFilters }: { top: number; onOpenFilters: () => void }) {
   const { recipes, groups, query, sort, setQuery, setSort } = useStore();
+  const [accountOpen, setAccountOpen] = useState(false);
   const results = useMemo(() => selectResults(recipes, groups, query, sort), [recipes, groups, query, sort]);
 
   return (
@@ -66,7 +68,9 @@ function HomeView({ top, onOpenFilters }: { top: number; onOpenFilters: () => vo
             <Display size={27} color={C.pink}> !</Display>
           </Display>
         </View>
+        <AccountButton onPress={() => setAccountOpen(true)} />
       </View>
+      <AccountSheet visible={accountOpen} onClose={() => setAccountOpen(false)} />
 
       <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 16, marginTop: 6 }}>
         <BrutBox radius={14} style={styles.search}>

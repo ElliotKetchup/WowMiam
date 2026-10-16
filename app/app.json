@@ -3,7 +3,7 @@
     "name": "Wow Miam",
     "slug": "wowmiam",
     "owner": "elliota-org",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -24,7 +24,8 @@
         "foregroundImage": "./assets/brand/adaptive-foreground.png",
         "monochromeImage": "./assets/brand/adaptive-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -46,7 +47,10 @@
           "photosPermission": "Wow Miam a besoin de tes photos pour ajouter l’image d’un plat.",
           "cameraPermission": "Wow Miam a besoin de l’appareil photo pour photographier tes plats."
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "@react-native-google-signin/google-signin"
     ],
     "experiments": {
       "typedRoutes": false,
