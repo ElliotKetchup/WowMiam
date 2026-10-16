@@ -54,8 +54,18 @@ jobs:
       - name: Generate native Android project
         run: npx expo prebuild --platform android --no-install --clean
 
+      # The template's 2 GB heap / 512 MB metaspace is too small once expo-updates (KSP) and Firebase
+      # are in: KSP died with "OutOfMemoryError: Metaspace" and Gradle then hung instead of failing.
+      - name: Give Gradle enough memory
+        working-directory: app/android
+        run: |
+          sed -i '/^org.gradle.jvmargs=/d; /^kotlin.daemon.jvmargs=/d' gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> gradle.properties
+          echo 'kotlin.daemon.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=1g' >> gradle.properties
+
       - name: Build release APK
         working-directory: app/android
+        timeout-minutes: 40
         run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a
 
       - name: Name the APK
