@@ -1,0 +1,15 @@
+# Every push to main ships the JavaScript and assets to phones as an over-the-air update.
+# Native changes (new native library, icon, permissions) also need a new APK: bump `version`
+# in app.json so old installs don't receive an update they can't run, and the APK workflow rebuilds.
+name: Publish update
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    name: Publish preview update
+    type: update
+    params:
+      channel: preview

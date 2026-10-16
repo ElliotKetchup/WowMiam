@@ -2,7 +2,11 @@
   "expo": {
     "name": "Wow Miam",
     "slug": "wowmiam",
+    "owner": "elliota-org",
     "version": "0.1.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/brand/icon.png",
     "scheme": "wowmiam",
@@ -47,6 +51,19 @@
     "experiments": {
       "typedRoutes": false,
       "reactCompiler": true
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f735625b-b0fa-4d8a-a80e-ffb8b17e3cde",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "requestHeaders": {
+        "expo-channel-name": "preview"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f735625b-b0fa-4d8a-a80e-ffb8b17e3cde"
+      }
     }
   }
 }

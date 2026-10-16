@@ -3,7 +3,14 @@ name: Android APK
 on:
   push:
     branches: [main]
-    paths: ["app/**", ".github/workflows/android-apk.yml"]
+    # Only native changes need a new APK; JavaScript and assets reach phones as EAS updates
+    # (app/.eas/workflows/publish-update.yml).
+    paths:
+      - "app/app.json"
+      - "app/package.json"
+      - "app/package-lock.json"
+      - "app/assets/brand/**"
+      - ".github/workflows/android-apk.yml"
   workflow_dispatch:
 
 permissions:

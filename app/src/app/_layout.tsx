@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
+import { UpdateBanner } from '@/components/update-banner';
 import { C } from '@/lib/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -35,6 +36,7 @@ export default function RootLayout() {
         <Stack.Screen name="folder/[id]" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="create" options={{ animation: 'slide_from_bottom' }} />
       </Stack>
+      <UpdateBanner />
     </>
   );
 }
