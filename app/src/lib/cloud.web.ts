@@ -3,7 +3,9 @@ export function initCloud(): () => void {
   return () => undefined;
 }
 
-export async function signInWithGoogle(): Promise<boolean> {
+export type SignInOutcome = 'signed-in' | 'cancelled';
+
+export async function signInWithGoogle(): Promise<SignInOutcome> {
   throw new Error('La connexion Google est disponible dans l’app Android.');
 }
 

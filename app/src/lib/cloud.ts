@@ -230,20 +230,24 @@ export function initCloud(): () => void {
   });
 }
 
-/** Resolves false when the person backs out of the Google picker. */
-export async function signInWithGoogle(): Promise<boolean> {
+export type SignInOutcome = 'signed-in' | 'cancelled';
+
+/** 'cancelled' when the Google picker closed without an account (backed out, or never shown). */
+export async function signInWithGoogle(): Promise<SignInOutcome> {
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     const res = await GoogleSignin.signIn();
-    if (res.type !== 'success') return false;
+    if (res.type !== 'success') return 'cancelled';
     if (!res.data.idToken) throw new Error('Google n’a pas renvoyé de jeton de connexion.');
     await signInWithCredential(getAuth(), GoogleAuthProvider.credential(res.data.idToken));
-    return true;
+    return 'signed-in';
   } catch (e) {
     if (isErrorWithCode(e)) {
-      if (e.code === statusCodes.SIGN_IN_CANCELLED || e.code === statusCodes.IN_PROGRESS) return false;
+      if (e.code === statusCodes.SIGN_IN_CANCELLED || e.code === statusCodes.IN_PROGRESS) return 'cancelled';
       if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) throw new Error('Les services Google Play ne sont pas disponibles sur ce téléphone.');
-      if (e.code === '10' || e.code === 'DEVELOPER_ERROR') throw new Error('Connexion Google mal configurée (empreinte SHA-1 ou identifiant client).');
+      if (e.code === '10' || e.code === 'DEVELOPER_ERROR') throw new Error('Connexion Google mal configurée (empreinte SHA-1 ou identifiant client). Code 10.');
+      // Keep the raw code visible: it's what tells a config problem from a network one.
+      throw new Error(`${e.message} (code ${e.code})`);
     }
     throw e;
   }

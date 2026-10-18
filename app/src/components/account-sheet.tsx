@@ -54,7 +54,19 @@ export function AccountSheet({ visible, onClose }: { visible: boolean; onClose: 
           {busy ? <ActivityIndicator color={C.ink} /> : <Display size={17}>Se déconnecter</Display>}
         </Brut>
       ) : (
-        <Brut color={C.ink} shadow={C.pink} radius={14} style={styles.cta} onPress={() => run(signInWithGoogle)} disabled={busy}>
+        <Brut
+          color={C.ink}
+          shadow={C.pink}
+          radius={14}
+          style={styles.cta}
+          disabled={busy}
+          onPress={() =>
+            run(async () => {
+              if ((await signInWithGoogle()) === 'cancelled') {
+                setProblem('La fenêtre Google s’est fermée sans connexion. Si elle ne s’est même pas affichée, dis-le à Claude.');
+              }
+            })
+          }>
           {busy ? <ActivityIndicator color={C.paper} /> : (
             <View style={styles.row}>
               <View style={styles.g}><Txt font="bold" size={15} style={{ lineHeight: 18 }}>G</Txt></View>

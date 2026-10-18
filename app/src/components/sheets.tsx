@@ -1,8 +1,8 @@
 /** Bottom sheets: folder create/edit and "add recipes to this folder". */
 import { type ReactNode, useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Brut, Display, Icon, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
@@ -10,11 +10,23 @@ import type { Folder } from '@/lib/data';
 import { useStore } from '@/lib/store';
 import { C, F, FOLDER_SWATCHES, type Swatch, fg } from '@/lib/theme';
 
-export function Sheet({ visible, onClose, title, children }: { visible: boolean; onClose: () => void; title: string; children: ReactNode }) {
+type SheetProps = { visible: boolean; onClose: () => void; title: string; children: ReactNode };
+
+/** A Modal is its own window: measure the safe area there, not in the app's window behind it. */
+export function Sheet(props: SheetProps) {
+  return (
+    <Modal visible={props.visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={props.onClose}>
+      <SafeAreaProvider>
+        <SheetBody {...props} />
+      </SafeAreaProvider>
+    </Modal>
+  );
+}
+
+function SheetBody({ onClose, title, children }: SheetProps) {
   const insets = useSafeAreaInsets();
   return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <Pressable style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(42,21,48,0.45)' }]} onPress={onClose} accessibilityLabel="Fermer" />
         <View style={{ flex: 1 }} pointerEvents="box-none" />
         <Animated.View entering={SlideInDown.duration(260)} style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
@@ -27,7 +39,6 @@ export function Sheet({ visible, onClose, title, children }: { visible: boolean;
           {children}
         </Animated.View>
       </KeyboardAvoidingView>
-    </Modal>
   );
 }
 
