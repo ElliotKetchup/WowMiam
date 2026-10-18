@@ -11,7 +11,9 @@ Firestore Database → **Rules** → paste [`app/firestore.rules`](../app/firest
 ## 2. Blaze plan + Storage (photos)
 
 1. Firebase console → bottom-left **Spark** → **Upgrade** → Blaze → link a card / billing account.
-2. **Storage** → **Get started** → production mode → location `europe-west1` (or the region you picked for Firestore).
+2. **Storage** → **Get started** → production mode → **No-cost locations** (« Emplacements sans frais ») →
+   `us-central1`. The free 5 GB only applies to `us-central1`, `us-east1` and `us-west1`; any other
+   location is billed from the first byte. (Firestore can stay in Europe, they're independent.)
 3. Storage → **Rules** → paste [`app/storage.rules`](../app/storage.rules) → **Publish**.
    Only the owner can read/write their photos, uploads must be images under 1 MB.
 
