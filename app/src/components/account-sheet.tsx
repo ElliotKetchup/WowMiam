@@ -1,5 +1,7 @@
 /** Sign in with Google to back up and sync recipes; or see who is signed in and sign out. */
+import Constants from 'expo-constants';
 import { Image } from 'expo-image';
+import * as Updates from 'expo-updates';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
@@ -78,8 +80,17 @@ export function AccountSheet({ visible, onClose }: { visible: boolean; onClose: 
       <Txt size={12} color={C.muted} style={{ marginTop: 12, textAlign: 'center' }}>
         {account ? 'Tes recettes restent sur ce téléphone après la déconnexion.' : 'Tes photos sont compressées puis sauvegardées avec les recettes.'}
       </Txt>
+      <Txt size={11} color={C.muted} style={{ marginTop: 10, textAlign: 'center', opacity: 0.7 }}>{buildLabel()}</Txt>
     </Sheet>
   );
+}
+
+/** Which code is running: the one inside the APK, or an over-the-air update (and from when). */
+function buildLabel(): string {
+  const version = `v${Updates.runtimeVersion ?? Constants.expoConfig?.version ?? "?"}`;
+  if (Updates.isEmbeddedLaunch) return `${version} · APK n°${Constants.expoConfig?.android?.versionCode ?? '?'}`;
+  const at = Updates.createdAt?.toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return at ? `${version} · mise à jour du ${at}` : version;
 }
 
 function Profile({ account }: { account: Account }) {

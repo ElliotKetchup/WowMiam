@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,30 +32,41 @@ export default function Home() {
   const insets = useSafeAreaInsets();
   const [tab, setTab] = useState<Tab>('home');
   const [filterOpen, setFilterOpen] = useState(false);
+  // Sheets live here, at the screen's root, so they cover the whole screen instead of scrolling with a tab.
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const foldersScroll = useRef<ScrollView>(null);
+  const folderCount = useStore((s) => s.folders.length);
 
   return (
     <View style={{ flex: 1, backgroundColor: C.paper }}>
       {tab === 'home' ? (
         <View key="home" style={{ flex: 1 }}>
-          <HomeView top={insets.top} onOpenFilters={() => setFilterOpen(true)} />
+          <HomeView top={insets.top} onOpenFilters={() => setFilterOpen(true)} onOpenAccount={() => setAccountOpen(true)} />
         </View>
       ) : (
         <View key="folders" style={{ flex: 1 }}>
-          <FoldersView top={insets.top} />
+          <FoldersView top={insets.top} scroll={foldersScroll} onNewFolder={() => setNewFolderOpen(true)} />
         </View>
       )}
       <StatusShade height={insets.top} />
       <NavBar tab={tab} onTab={setTab} bottom={insets.bottom} />
       {filterOpen ? <FilterPanel top={insets.top} onClose={() => setFilterOpen(false)} /> : null}
+      <AccountSheet visible={accountOpen} onClose={() => setAccountOpen(false)} />
+      <FolderSheet
+        visible={newFolderOpen}
+        onClose={() => setNewFolderOpen(false)}
+        defaultColor={FOLDER_SWATCHES[folderCount % FOLDER_SWATCHES.length]}
+        onCreated={() => setTimeout(() => foldersScroll.current?.scrollToEnd({ animated: true }), 250)}
+      />
     </View>
   );
 }
 
 /* ------------------------------------------------------------------ home */
 
-function HomeView({ top, onOpenFilters }: { top: number; onOpenFilters: () => void }) {
+function HomeView({ top, onOpenFilters, onOpenAccount }: { top: number; onOpenFilters: () => void; onOpenAccount: () => void }) {
   const { recipes, groups, query, sort, setQuery, setSort } = useStore();
-  const [accountOpen, setAccountOpen] = useState(false);
   const results = useMemo(() => selectResults(recipes, groups, query, sort), [recipes, groups, query, sort]);
 
   return (
@@ -68,9 +79,8 @@ function HomeView({ top, onOpenFilters }: { top: number; onOpenFilters: () => vo
             <Display size={27} color={C.pink}> !</Display>
           </Display>
         </View>
-        <AccountButton onPress={() => setAccountOpen(true)} />
+        <AccountButton onPress={onOpenAccount} />
       </View>
-      <AccountSheet visible={accountOpen} onClose={() => setAccountOpen(false)} />
 
       <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 16, marginTop: 6 }}>
         <BrutBox radius={14} style={styles.search}>
@@ -327,17 +337,15 @@ function FilterPanel({ top, onClose }: { top: number; onClose: () => void }) {
 
 /* --------------------------------------------------------------- folders */
 
-function FoldersView({ top }: { top: number }) {
+function FoldersView({ top, scroll, onNewFolder }: { top: number; scroll: RefObject<ScrollView | null>; onNewFolder: () => void }) {
   const { folders, recipes } = useStore();
-  const [sheet, setSheet] = useState(false);
-  const scroll = useRef<ScrollView>(null);
   const [first, ...rest] = folders;
   const cells: (Folder | 'new')[] = first ? [...rest, 'new'] : [];
   const rows: (Folder | 'new')[][] = [];
   for (let i = 0; i < cells.length; i += 2) rows.push(cells.slice(i, i + 2));
   const byId = new Map(recipes.map((r) => [r.id, r]));
   let idx = 0;
-  const open = () => setSheet(true);
+  const open = onNewFolder;
   return (
     <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: top + 14, paddingBottom: 140 }}>
       <View style={{ marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -354,12 +362,6 @@ function FoldersView({ top }: { top: number }) {
           </View>
         ))}
       </View>
-      <FolderSheet
-        visible={sheet}
-        onClose={() => setSheet(false)}
-        defaultColor={FOLDER_SWATCHES[folders.length % FOLDER_SWATCHES.length]}
-        onCreated={() => setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 250)}
-      />
     </ScrollView>
   );
 }

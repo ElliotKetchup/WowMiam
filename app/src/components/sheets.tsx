@@ -1,8 +1,8 @@
 /** Bottom sheets: folder create/edit and "add recipes to this folder". */
-import { type ReactNode, useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { Alert, BackHandler, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown, useAnimatedKeyboard, useAnimatedStyle } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Brut, Display, Icon, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
@@ -12,33 +12,43 @@ import { C, F, FOLDER_SWATCHES, type Swatch, fg } from '@/lib/theme';
 
 type SheetProps = { visible: boolean; onClose: () => void; title: string; children: ReactNode };
 
-/** A Modal is its own window: measure the safe area there, not in the app's window behind it. */
-export function Sheet(props: SheetProps) {
-  return (
-    <Modal visible={props.visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent onRequestClose={props.onClose}>
-      <SafeAreaProvider>
-        <SheetBody {...props} />
-      </SafeAreaProvider>
-    </Modal>
-  );
+/**
+ * An overlay drawn in the app's own window, not a Modal: a Modal is a separate Android window whose
+ * edges don't match the screen's, which left the sheet floating above the bottom. Render it as the
+ * last child of a screen's root view so it covers the whole screen.
+ */
+export function Sheet({ visible, onClose, title, children }: SheetProps) {
+  const close = useRef(onClose);
+  close.current = onClose;
+  useEffect(() => {
+    if (!visible) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      close.current();
+      return true;
+    });
+    return () => sub.remove();
+  }, [visible]);
+  if (!visible) return null;
+  return <SheetBody onClose={onClose} title={title}>{children}</SheetBody>;
 }
 
-function SheetBody({ onClose, title, children }: SheetProps) {
+function SheetBody({ onClose, title, children }: Omit<SheetProps, 'visible'>) {
   const insets = useSafeAreaInsets();
+  const keyboard = useAnimatedKeyboard();
+  const lift = useAnimatedStyle(() => ({ paddingBottom: Math.max(insets.bottom, keyboard.height.value) + 16 }));
   return (
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <Pressable style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(42,21,48,0.45)' }]} onPress={onClose} accessibilityLabel="Fermer" />
-        <View style={{ flex: 1 }} pointerEvents="box-none" />
-        <Animated.View entering={SlideInDown.duration(260)} style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-          <View style={styles.head}>
-            <Display size={24}>{title}</Display>
-            <Pressable onPress={onClose} hitSlop={10} accessibilityLabel="Fermer">
-              <Icon name="close" />
-            </Pressable>
-          </View>
-          {children}
-        </Animated.View>
-      </KeyboardAvoidingView>
+    <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(160)} style={styles.overlay}>
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Fermer" />
+      <Animated.View entering={SlideInDown.duration(260)} exiting={SlideOutDown.duration(180)} style={[styles.sheet, lift]}>
+        <View style={styles.head}>
+          <Display size={24}>{title}</Display>
+          <Pressable onPress={onClose} hitSlop={10} accessibilityLabel="Fermer">
+            <Icon name="close" />
+          </Pressable>
+        </View>
+        {children}
+      </Animated.View>
+    </Animated.View>
   );
 }
 
@@ -167,6 +177,7 @@ export function RecipePickerSheet({ visible, onClose, folder }: { visible: boole
 }
 
 const styles = StyleSheet.create({
+  overlay: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 50, justifyContent: 'flex-end', backgroundColor: 'rgba(42,21,48,0.45)' },
   sheet: { backgroundColor: C.paper, borderTopLeftRadius: 26, borderTopRightRadius: 26, borderWidth: 2, borderBottomWidth: 0, borderColor: C.ink, paddingHorizontal: 16, paddingTop: 18 },
   head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 26 },
   preview: { minHeight: 96, borderRadius: 18, borderTopLeftRadius: 4, borderWidth: 2, borderColor: C.ink, padding: 14, justifyContent: 'flex-end', boxShadow: '4px 4px 0px #2A1530' },
