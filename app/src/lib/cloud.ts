@@ -113,10 +113,15 @@ async function uploadPhoto(uid: string, recipeId: string): Promise<void> {
   const r = useStore.getState().recipes.find((x) => x.id === recipeId);
   if (!r?.photoUri || !needsUpload(r)) return;
   const key = keyOf(r.photoUri);
-  const rendered = await ImageManipulator.manipulate(r.photoUri).resize({ width: PHOTO_WIDTH }).renderAsync();
-  const jpeg = await rendered.saveAsync({ compress: PHOTO_QUALITY, format: SaveFormat.JPEG });
   const target = ref(getStorage(), photoPath(uid, recipeId, key));
-  await putFile(target, jpeg.uri, { contentType: 'image/jpeg', cacheControl: 'public, max-age=31536000' });
+  if (r.cutout) {
+    // Already a small transparent WebP: re-encoding as JPEG would lose the transparency.
+    await putFile(target, r.photoUri, { contentType: 'image/webp', cacheControl: 'public, max-age=31536000' });
+  } else {
+    const rendered = await ImageManipulator.manipulate(r.photoUri).resize({ width: PHOTO_WIDTH }).renderAsync();
+    const jpeg = await rendered.saveAsync({ compress: PHOTO_QUALITY, format: SaveFormat.JPEG });
+    await putFile(target, jpeg.uri, { contentType: 'image/jpeg', cacheControl: 'public, max-age=31536000' });
+  }
   const url = await getDownloadURL(target);
   // A plain local edit: the store diff below writes photoUrl/photoKey to Firestore.
   useStore.setState((s) => ({ recipes: s.recipes.map((x) => (x.id === recipeId ? { ...x, photoUrl: url, photoKey: key } : x)) }));

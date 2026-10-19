@@ -36,8 +36,8 @@ const liftShadowIn = (delay: number) =>
     .duration(STICK_MS)
     .delay(delay);
 
-type Face = 'bundled' | 'photo' | 'placeholder';
-type StickerRecipe = Pick<Recipe, 'sticker' | 'photoUri' | 'photoUrl' | 'name'>;
+type Face = 'bundled' | 'cutout' | 'photo' | 'placeholder';
+type StickerRecipe = Pick<Recipe, 'sticker' | 'photoUri' | 'photoUrl' | 'name' | 'cutout'>;
 
 type StickerProps = {
   recipe: StickerRecipe;
@@ -51,7 +51,7 @@ type StickerProps = {
 };
 
 export function Sticker({ recipe, size, rotate = 0, style, delay = 0, animate = true, enter = 'stick' }: StickerProps) {
-  const face: Face = photoOf(recipe) ? 'photo' : recipe.sticker ? 'bundled' : 'placeholder';
+  const face: Face = photoOf(recipe) ? (recipe.cutout ? 'cutout' : 'photo') : recipe.sticker ? 'bundled' : 'placeholder';
   const entering = !animate ? undefined : enter === 'rise' ? riseIn(delay, size) : stickIn(delay);
   return (
     <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size, transform: [{ rotate: `${rotate}deg` }] }, style]}>
@@ -84,6 +84,9 @@ function FaceView({ recipe, face, size }: { recipe: StickerRecipe; face: Face; s
   if (face === 'bundled' && recipe.sticker) {
     return <Image source={STICKERS[recipe.sticker]} style={styles.fill} contentFit="contain" />;
   }
+  if (face === 'cutout') {
+    return <Image source={{ uri: photoOf(recipe) }} style={styles.fill} contentFit="contain" cachePolicy="disk" />;
+  }
   return (
     <View style={styles.center}>
       <View style={{ width: size * 0.6, height: size * 0.6, borderRadius: 14, borderWidth: 2, borderStyle: 'dashed', borderColor: C.ink, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.5)' }}>
@@ -96,6 +99,9 @@ function FaceView({ recipe, face, size }: { recipe: StickerRecipe; face: Face; s
 function ShadowShape({ recipe, face, size }: { recipe: StickerRecipe; face: Face; size: number }) {
   if (face === 'bundled' && recipe.sticker) {
     return <Image source={STICKERS[recipe.sticker]} style={styles.fill} contentFit="contain" tintColor={C.ink} blurRadius={8} />;
+  }
+  if (face === 'cutout') {
+    return <Image source={{ uri: photoOf(recipe) }} style={styles.fill} contentFit="contain" tintColor={C.ink} blurRadius={8} />;
   }
   const d = photoDiameter(size);
   return (

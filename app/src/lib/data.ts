@@ -28,6 +28,8 @@ export interface Recipe {
   photoUrl?: string;
   /** Which local file `photoUrl` was made from (its file name), so a replaced photo gets re-uploaded. */
   photoKey?: string;
+  /** The photo is a die-cut sticker (transparent WebP with a white rim), not a square photo. */
+  cutout?: boolean;
   type: string;
   diets: string[];
   tools: string[];

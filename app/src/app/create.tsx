@@ -3,7 +3,7 @@ import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSequence, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { Brut, BrutBox, Chip, Display, Icon, type IconName, stampIn, tap, Txt } 
 import { Sticker } from '@/components/sticker';
 import { useAccount } from '@/lib/account';
 import { canCook } from '@/lib/books';
+import { canCutOut, cutOutDish } from '@/lib/cutout';
 import { CATALOG, ingredientLine, type Kind, parseIngredient, photoOf, type Recipe, type Step } from '@/lib/data';
 import { useRole, useStore } from '@/lib/store';
 import { C, F } from '@/lib/theme';
@@ -50,6 +51,14 @@ export default function EditorScreen() {
   const [id] = useState(() => existing?.id ?? newId());
   const [photo, setPhoto] = useState<string | null>(existing ? photoOf(existing) ?? null : null);
   const [freshPhoto, setFreshPhoto] = useState(false);
+  // The picked photo stays in `photo`; its die-cut version, when the phone could make one, in `cut`.
+  const [cut, setCut] = useState<string | null>(existing?.cutout ? photoOf(existing) ?? null : null);
+  const [useCut, setUseCut] = useState(!!existing?.cutout);
+  const [cutting, setCutting] = useState(false);
+  const [cutNote, setCutNote] = useState<string | null>(null);
+  const shown = useCut && cut ? cut : photo;
+  const latestPhoto = useRef(photo);
+  latestPhoto.current = photo;
   const [name, setName] = useState(existing?.name ?? '');
   const [note, setNote] = useState(existing?.note ?? '');
   const [type, setType] = useState(existing?.type ?? 'Plat');
@@ -73,12 +82,32 @@ export default function EditorScreen() {
     }
     const res = camera ? await ImagePicker.launchCameraAsync(opts) : await ImagePicker.launchImageLibraryAsync(opts);
     if (res.canceled || !res.assets[0]) return;
+    let kept = res.assets[0].uri;
     try {
-      setPhoto(await keepPhoto(res.assets[0].uri, id));
+      kept = await keepPhoto(kept, id);
     } catch {
-      setPhoto(res.assets[0].uri);
+      // The picker's own copy still works for this session.
     }
+    setPhoto(kept);
+    setCut(null);
+    setUseCut(false);
+    setCutNote(null);
     setFreshPhoto(true);
+    if (canCutOut) cutOut(kept);
+  };
+
+  const cutOut = async (uri: string) => {
+    setCutting(true);
+    const outcome = await cutOutDish(uri, id);
+    // Another photo was picked meanwhile: this cut-out is for the old one.
+    if (latestPhoto.current !== uri) return;
+    setCutting(false);
+    if (outcome.kind === 'sticker') {
+      setCut(outcome.uri);
+      setUseCut(true);
+    } else {
+      setCutNote(outcome.kind === 'no-subject' ? 'Pas de plat assez net pour le détourer : la photo reste ronde.' : outcome.reason);
+    }
   };
 
   const toggle = (kind: 'diet' | 'tool', label: string) =>
@@ -97,7 +126,8 @@ export default function EditorScreen() {
       name: name.trim(),
       sticker: existing?.sticker,
       // A synced photo shown as-is stays remote; a newly picked one becomes the local file (and is uploaded again).
-      photoUri: photo && photo !== existing?.photoUrl ? photo : existing?.photoUri,
+      photoUri: shown && shown !== existing?.photoUrl ? shown : existing?.photoUri,
+      cutout: shown === existing?.photoUrl ? existing?.cutout : useCut && !!cut,
       photoUrl: existing?.photoUrl,
       photoKey: existing?.photoKey,
       type,
@@ -168,8 +198,32 @@ export default function EditorScreen() {
         <BrutBox color={C.teal} radius={22} style={styles.photo}>
           {photo || existing?.sticker ? (
             <>
-              <Sticker key={photo ?? 'sticker'} recipe={{ photoUri: photo ?? undefined, sticker: existing?.sticker, name }} size={190} rotate={-10} style={{ right: 4, top: -40 }} />
-              {freshPhoto ? (
+              <Sticker
+                key={shown ?? 'sticker'}
+                recipe={{ photoUri: shown ?? undefined, sticker: existing?.sticker, name, cutout: useCut && !!cut }}
+                size={190}
+                rotate={-10}
+                style={{ right: 4, top: -40 }}
+              />
+              {cutting ? (
+                <Animated.View entering={FadeIn.duration(200)} style={styles.badge}>
+                  <ActivityIndicator size="small" color={C.amber} />
+                  <Txt font="bold" size={12} color={C.amber} style={{ lineHeight: 16 }}>Détourage…</Txt>
+                </Animated.View>
+              ) : cut && photo && cut !== photo ? (
+                <View style={styles.cutSwitch}>
+                  {([true, false] as const).map((on) => (
+                    <Pressable
+                      key={String(on)}
+                      onPress={() => { tap(); setUseCut(on); }}
+                      style={[styles.cutBtn, useCut === on && { backgroundColor: C.ink }]}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: useCut === on }}>
+                      <Txt font="bold" size={12} color={useCut === on ? C.paper : C.ink} style={{ lineHeight: 16 }}>{on ? 'Détouré' : 'Rond'}</Txt>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : freshPhoto ? (
                 <Animated.View entering={FadeIn.delay(450).duration(200)} style={styles.badge}>
                   <Icon name="auto-awesome" size={16} color={C.amber} />
                   <Txt font="bold" size={12} color={C.amber} style={{ lineHeight: 16 }}>Sticker prêt</Txt>
@@ -189,6 +243,17 @@ export default function EditorScreen() {
             </View>
           )}
         </BrutBox>
+
+        {cutNote ? (
+          <View style={styles.cutNote}>
+            <Txt size={13} font="medium" color={C.muted} style={{ flex: 1 }}>{cutNote}</Txt>
+            {photo && canCutOut ? (
+              <Pressable onPress={() => { tap(); setCutNote(null); cutOut(photo); }} hitSlop={8}>
+                <Txt font="semi" size={13} style={{ textDecorationLine: 'underline' }}>Réessayer</Txt>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
 
         <Animated.View style={shake}>
           <TextInput
@@ -359,6 +424,9 @@ const styles = StyleSheet.create({
   photo: { marginTop: 34, marginHorizontal: 16, height: 140, padding: 12, justifyContent: 'flex-end', overflow: 'visible' },
   pickBtn: { flex: 1, height: 64, alignItems: 'center', justifyContent: 'center', gap: 4 },
   badge: { position: 'absolute', left: 12, bottom: 12, height: 32, paddingHorizontal: 11, borderRadius: 10, backgroundColor: C.ink, flexDirection: 'row', alignItems: 'center', gap: 5 },
+  cutSwitch: { position: 'absolute', left: 12, bottom: 12, flexDirection: 'row', borderWidth: 2, borderColor: C.ink, borderRadius: 10, overflow: 'hidden', backgroundColor: C.tile },
+  cutBtn: { height: 30, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  cutNote: { marginHorizontal: 16, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
   title: { marginTop: 22, marginHorizontal: 16, fontFamily: F.display, fontSize: 28, color: C.ink, paddingVertical: 4 },
   note: { marginHorizontal: 16, marginTop: 8, fontFamily: F.body, fontSize: 15, color: C.ink, paddingVertical: 4 },
   types: { marginTop: 18, marginHorizontal: 16, flexDirection: 'row', gap: 10 },
