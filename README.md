@@ -36,7 +36,7 @@ python design/prototype/check.py a      # plays style A's demo headless, reports
 
 ## The app (`app/`)
 
-Expo SDK 57 (React Native, TypeScript), Expo Router, Reanimated, Zustand. Data stays on the phone for now (AsyncStorage); photos are copied into the app's documents folder.
+Expo SDK 57 (React Native, TypeScript), Expo Router, Reanimated, Zustand. Data stays on the phone (AsyncStorage); signed in with Google, books sync through Firestore and can be shared with a brigade (see [docs/firebase-setup.md](docs/firebase-setup.md)); photos are copied into the app's documents folder and uploaded to Cloud Storage.
 
 ```sh
 cd app

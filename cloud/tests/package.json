@@ -1,0 +1,16 @@
+{
+  "name": "wowmiam-cloud-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:rules && npm run test:sync",
+    "test:rules": "firebase emulators:exec --only firestore --project wowmiam-test 'node rules.test.mjs'",
+    "test:sync": "node sync/build.mjs && firebase emulators:exec --only firestore --project wowmiam-sync 'bash sync/run.sh'"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.0",
+    "esbuild": "^0.25.0",
+    "firebase": "^11.0.0",
+    "firebase-tools": "^14.0.0"
+  }
+}

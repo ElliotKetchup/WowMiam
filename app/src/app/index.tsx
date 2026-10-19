@@ -5,11 +5,14 @@ import Animated, { FadeIn, FadeInDown, FadeOut, LinearTransition, useAnimatedSty
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AccountButton, AccountSheet } from '@/components/account-sheet';
+import { BookCover, BookSheet, MemberAvatar, ShelfSheet, useMembers } from '@/components/books';
 import { FolderSheet } from '@/components/sheets';
-import { Brut, BrutBox, Chip, Display, Icon, Logo, popIn, StatusShade, STICKER_LAG, tap, Txt } from '@/components/ui';
+import { Brut, BrutBox, Chip, Display, Icon, popIn, StatusShade, STICKER_LAG, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
+import { useAccount } from '@/lib/account';
+import { canCook, firstName } from '@/lib/books';
 import { CATALOG, type Folder, type Kind, KIND_LABEL, type Recipe, addedLabel, folderSwatch, photoOf } from '@/lib/data';
-import { activeCount, selectResults, useStore } from '@/lib/store';
+import { activeCount, live, selectResults, useBook, useHydrated, useRole, useStore } from '@/lib/store';
 import { C, FOLDER_SWATCHES, type Swatch, TILE_SWATCHES, fg, hardShadow, shade } from '@/lib/theme';
 
 type Tab = 'home' | 'folders';
@@ -35,6 +38,8 @@ export default function Home() {
   // Sheets live here, at the screen's root, so they cover the whole screen instead of scrolling with a tab.
   const [accountOpen, setAccountOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const [shelfOpen, setShelfOpen] = useState(false);
+  const [newBookOpen, setNewBookOpen] = useState(false);
   const foldersScroll = useRef<ScrollView>(null);
   const folderCount = useStore((s) => s.folders.length);
 
@@ -42,7 +47,12 @@ export default function Home() {
     <View style={{ flex: 1, backgroundColor: C.paper }}>
       {tab === 'home' ? (
         <View key="home" style={{ flex: 1 }}>
-          <HomeView top={insets.top} onOpenFilters={() => setFilterOpen(true)} onOpenAccount={() => setAccountOpen(true)} />
+          <HomeView
+            top={insets.top}
+            onOpenFilters={() => setFilterOpen(true)}
+            onOpenAccount={() => setAccountOpen(true)}
+            onOpenShelf={() => setShelfOpen(true)}
+          />
         </View>
       ) : (
         <View key="folders" style={{ flex: 1 }}>
@@ -53,6 +63,8 @@ export default function Home() {
       <NavBar tab={tab} onTab={setTab} bottom={insets.bottom} />
       {filterOpen ? <FilterPanel top={insets.top} onClose={() => setFilterOpen(false)} /> : null}
       <AccountSheet visible={accountOpen} onClose={() => setAccountOpen(false)} />
+      <ShelfSheet visible={shelfOpen} onClose={() => setShelfOpen(false)} onNewBook={() => setNewBookOpen(true)} onAccount={() => setAccountOpen(true)} />
+      <BookSheet visible={newBookOpen} onClose={() => setNewBookOpen(false)} />
       <FolderSheet
         visible={newFolderOpen}
         onClose={() => setNewFolderOpen(false)}
@@ -65,24 +77,28 @@ export default function Home() {
 
 /* ------------------------------------------------------------------ home */
 
-function HomeView({ top, onOpenFilters, onOpenAccount }: { top: number; onOpenFilters: () => void; onOpenAccount: () => void }) {
+type HomeViewProps = { top: number; onOpenFilters: () => void; onOpenAccount: () => void; onOpenShelf: () => void };
+
+function HomeView({ top, onOpenFilters, onOpenAccount, onOpenShelf }: HomeViewProps) {
   const { recipes, groups, query, sort, setQuery, setSort } = useStore();
   const results = useMemo(() => selectResults(recipes, groups, query, sort), [recipes, groups, query, sort]);
+  const book = useBook();
+  const members = useMembers(book.id);
 
   return (
     <ScrollView contentContainerStyle={{ paddingTop: top + 8, paddingBottom: 140 }} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Logo />
-          <Display size={27}>
-            Wow Miam
-            <Display size={27} color={C.pink}> !</Display>
-          </Display>
-        </View>
+        <Brut radius={14} style={styles.shelfBtn} onPress={onOpenShelf} accessibilityLabel="Bibliothèque : changer de livre">
+          <Icon name="shelves" />
+          <Txt font="semi" size={14}>Bibliothèque</Txt>
+        </Brut>
         <AccountButton onPress={onOpenAccount} />
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 16, marginTop: 6 }}>
+      <BookCover book={book} members={members} />
+      <News bookId={book.id} />
+
+      <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 16, marginTop: 18 }}>
         <BrutBox radius={14} style={styles.search}>
           <Icon name="search" color={C.muted} />
           <TextInput
@@ -125,6 +141,35 @@ function HomeView({ top, onOpenFilters, onOpenAccount }: { top: number; onOpenFi
 
       <Bento list={results} />
     </ScrollView>
+  );
+}
+
+/** "Léa a ajouté 2 recettes · hier": what the brigade added since I last looked. Tap to dismiss. */
+function News({ bookId }: { bookId: string }) {
+  const myUid = useAccount((s) => s.account?.uid);
+  const recipes = useStore((s) => s.recipes);
+  const seenAt = useStore((s) => s.seenAt[bookId]);
+  const markSeen = useStore((s) => s.markSeen);
+  const hydrated = useHydrated();
+  // A book opened for the first time has no news: everything in it is new.
+  useEffect(() => {
+    if (hydrated && seenAt === undefined) markSeen(bookId);
+  }, [hydrated, bookId, seenAt, markSeen]);
+  const fresh = live(recipes).filter((r) => r.byUid && r.byUid !== myUid && r.addedAt > (seenAt ?? Infinity));
+  if (!myUid || !fresh.length) return null;
+  const people = [...new Map(fresh.map((r) => [r.byUid, r])).values()];
+  const latest = Math.max(...fresh.map((r) => r.addedAt));
+  const who = people.length === 1 ? firstName(people[0].byName) : `${firstName(people[0].byName)} et ${people.length - 1 === 1 ? firstName(people[1].byName) : `${people.length - 1} autres`}`;
+  const what = fresh.length === 1 ? `« ${fresh[0].name} »` : `${fresh.length} recettes`;
+  return (
+    <Animated.View entering={FadeIn.duration(220)} exiting={FadeOut.duration(160)} style={{ marginHorizontal: 16, marginTop: 24, flexDirection: 'row' }}>
+      <Pressable onPress={() => { tap(); markSeen(bookId); }} style={styles.news} accessibilityRole="button" accessibilityLabel={`${who} a ajouté ${what}. Masquer`}>
+        <MemberAvatar uid={people[0].byUid ?? ''} name={people[0].byName ?? null} photo={null} size={24} />
+        <Txt font="semi" size={13} numberOfLines={1} style={{ flexShrink: 1 }}>{who} {people.length > 1 ? 'ont' : 'a'} ajouté {what}</Txt>
+        <Txt size={12} font="medium" color={C.muted}>· {addedLabel(latest).toLowerCase()}</Txt>
+        <Icon name="close" size={16} color={C.muted} />
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -230,6 +275,7 @@ function Bento({ list }: { list: Recipe[] }) {
 
 /** Tiles grow with their text (min height per slot), and text is clamped so they never grow forever. */
 function Tile({ r, slot, index, inRow = false }: { r: Recipe; slot: Slot; index: number; inRow?: boolean }) {
+  const myUid = useAccount((s) => s.account?.uid);
   const sw = TILE_SWATCHES[index % TILE_SWATCHES.length];
   const tc = fg(sw);
   const at = STICKER_AT[slot];
@@ -244,6 +290,7 @@ function Tile({ r, slot, index, inRow = false }: { r: Recipe; slot: Slot; index:
   const date = (
     <Txt size={12} font="semi" color={tc} style={{ opacity: 0.85, marginBottom: 6 }}>
       {addedLabel(r.addedAt)}
+      {r.byUid && r.byUid !== myUid ? ` · ${firstName(r.byName)}` : ''}
     </Txt>
   );
   let body: ReactNode;
@@ -339,23 +386,26 @@ function FilterPanel({ top, onClose }: { top: number; onClose: () => void }) {
 
 function FoldersView({ top, scroll, onNewFolder }: { top: number; scroll: RefObject<ScrollView | null>; onNewFolder: () => void }) {
   const { folders, recipes } = useStore();
+  const cooks = canCook(useRole());
   const [first, ...rest] = folders;
-  const cells: (Folder | 'new')[] = first ? [...rest, 'new'] : [];
+  const cells: (Folder | 'new')[] = first ? (cooks ? [...rest, 'new'] : rest) : [];
   const rows: (Folder | 'new')[][] = [];
   for (let i = 0; i < cells.length; i += 2) rows.push(cells.slice(i, i + 2));
-  const byId = new Map(recipes.map((r) => [r.id, r]));
+  const byId = new Map(live(recipes).map((r) => [r.id, r]));
   let idx = 0;
   const open = onNewFolder;
   return (
     <ScrollView ref={scroll} contentContainerStyle={{ paddingTop: top + 14, paddingBottom: 140 }}>
       <View style={{ marginHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Display size={44} style={{ flex: 1 }}>Dossiers</Display>
-        <Brut color={C.amber} radius={14} style={styles.addFolder} onPress={open} accessibilityLabel="Nouveau dossier">
-          <Icon name="create-new-folder" />
-        </Brut>
+        {cooks ? (
+          <Brut color={C.amber} radius={14} style={styles.addFolder} onPress={open} accessibilityLabel="Nouveau dossier">
+            <Icon name="create-new-folder" />
+          </Brut>
+        ) : null}
       </View>
       <View style={{ marginTop: 40, marginHorizontal: 16, gap: 22 }}>
-        {first ? <FolderTile f={first} index={idx++} wide byId={byId} /> : <NewFolderTile index={0} onPress={open} />}
+        {first ? <FolderTile f={first} index={idx++} wide byId={byId} /> : cooks ? <NewFolderTile index={0} onPress={open} /> : null}
         {rows.map((row) => (
           <View key={row[0] === 'new' ? 'new' : row[0].id} style={{ flexDirection: 'row', gap: 14 }}>
             {row.map((f) => (f === 'new' ? <NewFolderTile key="new" index={idx++} onPress={open} /> : <FolderTile key={f.id} f={f} index={idx++} byId={byId} />))}
@@ -384,13 +434,14 @@ function FolderTile({ f, index, wide = false, byId }: { f: Folder; index: number
   const tc = fg(sw);
   const spec = wide ? POCKET.wide : POCKET.small;
   const covers = f.ids.map((id) => byId.get(id)).filter((r): r is Recipe => !!r && !!(r.sticker || photoOf(r))).slice(0, spec.stickers.length);
+  const count = f.ids.filter((id) => byId.has(id)).length;
   const delay = index * 70;
   return (
     <Animated.View entering={popIn(delay)} style={[{ zIndex: index }, wide ? null : { flex: 1 }]}>
       <Pressable
         onPress={() => { tap(); router.push({ pathname: '/folder/[id]', params: { id: f.id, color: sw } }); }}
         accessibilityRole="button"
-        accessibilityLabel={`${f.name}, ${f.ids.length} recette${f.ids.length > 1 ? 's' : ''}`}>
+        accessibilityLabel={`${f.name}, ${count} recette${count > 1 ? 's' : ''}`}>
         {({ pressed }) => (
           <View style={{ minHeight: spec.height, transform: pressed ? [{ translateX: 3 }, { translateY: 3 }] : [] }}>
             <View style={[styles.pocketBack, { backgroundColor: back, boxShadow: hardShadow(pressed ? 1 : 4) }]}>
@@ -416,8 +467,8 @@ function FolderTile({ f, index, wide = false, byId }: { f: Folder; index: number
             <View style={[styles.pocketFront, { marginTop: spec.lip, minHeight: spec.height - spec.lip, backgroundColor: color }]}>
               <Display size={wide ? 28 : 20} color={tc} numberOfLines={wide ? 2 : 3}>{f.name}</Display>
               <View style={{ marginTop: 'auto', paddingTop: 8, flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-                <Display size={22} color={tc}>{f.ids.length}</Display>
-                <Txt font="semi" size={13} color={tc}>recette{f.ids.length > 1 ? 's' : ''}</Txt>
+                <Display size={22} color={tc}>{count}</Display>
+                <Txt font="semi" size={13} color={tc}>recette{count > 1 ? 's' : ''}</Txt>
               </View>
             </View>
           </View>
@@ -441,14 +492,20 @@ function NewFolderTile({ index, onPress }: { index: number; onPress: () => void 
 /* ---------------------------------------------------------------- navbar */
 
 function NavBar({ tab, onTab, bottom }: { tab: Tab; onTab: (t: Tab) => void; bottom: number }) {
+  // A Commis reads only: no new recipe button.
+  const cooks = canCook(useRole());
   return (
     <View style={[styles.nav, { paddingBottom: bottom + 10 }]}>
       <NavTab label="Accueil" icon="home" on={tab === 'home'} onPress={() => onTab('home')} />
-      <View style={styles.plusWrap}>
-        <Brut color={C.pink} radius={20} offset={6} style={styles.plus} onPress={() => router.push('/create')} accessibilityLabel="Nouvelle recette">
-          <Icon name="add" size={38} color={C.onDark} />
-        </Brut>
-      </View>
+      {cooks ? (
+        <View style={styles.plusWrap}>
+          <Brut color={C.pink} radius={20} offset={6} style={styles.plus} onPress={() => router.push('/create')} accessibilityLabel="Nouvelle recette">
+            <Icon name="add" size={38} color={C.onDark} />
+          </Brut>
+        </View>
+      ) : (
+        <View style={{ width: 66 }} />
+      )}
       <NavTab label="Dossiers" icon="folder" on={tab === 'folders'} onPress={() => onTab('folders')} />
     </View>
   );
@@ -473,6 +530,8 @@ function NavTab({ label, icon, on, onPress }: { label: string; icon: 'home' | 'f
 
 const styles = StyleSheet.create({
   header: { height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  shelfBtn: { height: 44, paddingLeft: 10, paddingRight: 14, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  news: { flexShrink: 1, flexDirection: 'row', alignItems: 'center', gap: 8, height: 38, paddingLeft: 6, paddingRight: 10, borderWidth: 2, borderStyle: 'dashed', borderColor: C.ink, borderRadius: 999, backgroundColor: 'rgba(0,125,114,0.10)' },
   search: { flex: 1, height: 54, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14 },
   searchInput: { flex: 1, fontFamily: 'Onest_500Medium', fontSize: 15, color: C.ink, paddingVertical: 0 },
   tune: { width: 54, height: 54, alignItems: 'center', justifyContent: 'center' },

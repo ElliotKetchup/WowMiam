@@ -9,8 +9,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Brut, BrutBox, Chip, Display, Icon, type IconName, stampIn, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
+import { useAccount } from '@/lib/account';
+import { canCook } from '@/lib/books';
 import { CATALOG, ingredientLine, type Kind, parseIngredient, photoOf, type Recipe, type Step } from '@/lib/data';
-import { useStore } from '@/lib/store';
+import { useRole, useStore } from '@/lib/store';
 import { C, F } from '@/lib/theme';
 
 const newId = (): string => `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
@@ -42,6 +44,8 @@ export default function EditorScreen() {
   const folders = useStore((s) => s.folders);
   const saveRecipe = useStore((s) => s.saveRecipe);
   const deleteRecipe = useStore((s) => s.deleteRecipe);
+  const account = useAccount((s) => s.account);
+  const cooks = canCook(useRole());
   const editing = !!existing;
   const [id] = useState(() => existing?.id ?? newId());
   const [photo, setPhoto] = useState<string | null>(existing ? photoOf(existing) ?? null : null);
@@ -102,6 +106,9 @@ export default function EditorScreen() {
       time: Math.max(1, Number.parseInt(time, 10) || 20),
       serves: existing?.serves ?? 2,
       addedAt: existing?.addedAt ?? Date.now(),
+      // Credit goes to whoever first put it in the book.
+      byUid: existing ? existing.byUid : account?.uid,
+      byName: existing ? existing.byName : account?.name ?? undefined,
       note: note.trim(),
       ingredients: ings.map((l) => l.trim()).filter(Boolean).map(parseIngredient),
       steps: toSteps(steps, existing?.steps ?? []),
@@ -113,10 +120,10 @@ export default function EditorScreen() {
   };
 
   const remove = () => {
-    Alert.alert('Supprimer cette recette ?', 'Elle sera retirée de tous ses dossiers. C’est définitif.', [
+    Alert.alert('Mettre à la corbeille ?', 'Tu pourras la récupérer pendant 30 jours depuis la corbeille (Brigade → Corbeille).', [
       { text: 'Annuler', style: 'cancel' },
       {
-        text: 'Supprimer',
+        text: 'Mettre à la corbeille',
         style: 'destructive',
         onPress: () => {
           router.dismissAll();
@@ -132,6 +139,18 @@ export default function EditorScreen() {
     { label: 'Galerie', icon: 'image', color: C.tile, onPress: () => pick(false) },
     { label: 'Photo', icon: 'add-a-photo', color: C.pink, textColor: C.onDark, onPress: () => pick(true) },
   ];
+
+  if (!cooks) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: C.paper }}>
+        <Display size={22} style={{ textAlign: 'center' }}>Lecture seule</Display>
+        <Txt style={{ textAlign: 'center', marginTop: 8 }}>En Commis, tu lis les recettes de ce livre sans les modifier.</Txt>
+        <Brut style={{ marginTop: 16, paddingHorizontal: 16, height: 44, justifyContent: 'center' }} onPress={() => router.back()}>
+          <Txt font="bold">Retour</Txt>
+        </Brut>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.paper }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -232,7 +251,7 @@ export default function EditorScreen() {
         {editing ? (
           <Pressable onPress={remove} style={styles.danger} hitSlop={6}>
             <Icon name="delete-outline" size={20} color={C.coral} />
-            <Txt font="semi" color={C.coral}>Supprimer la recette</Txt>
+            <Txt font="semi" color={C.coral}>Mettre à la corbeille</Txt>
           </Pressable>
         ) : null}
       </ScrollView>

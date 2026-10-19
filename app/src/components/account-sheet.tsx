@@ -40,7 +40,7 @@ export function AccountSheet({ visible, onClose }: { visible: boolean; onClose: 
     <Sheet visible={visible} onClose={onClose} title={account ? 'Ton compte' : 'Sauvegarde'}>
       {account ? <Profile account={account} /> : (
         <Txt size={15} style={{ lineHeight: 22 }}>
-          Connecte-toi pour retrouver tes recettes et tes dossiers sur tous tes téléphones, et ne plus jamais les perdre.
+          Connecte-toi pour retrouver tes recettes sur tous tes téléphones, ne plus jamais les perdre, et partager tes livres avec ta brigade.
         </Txt>
       )}
 
@@ -78,7 +78,7 @@ export function AccountSheet({ visible, onClose }: { visible: boolean; onClose: 
         </Brut>
       )}
       <Txt size={12} color={C.muted} style={{ marginTop: 12, textAlign: 'center' }}>
-        {account ? 'Tes recettes restent sur ce téléphone après la déconnexion.' : 'Tes photos sont compressées puis sauvegardées avec les recettes.'}
+        {account ? 'Ton livre perso reste sur ce téléphone après la déconnexion ; les livres partagés le quittent.' : 'Tes photos sont compressées puis sauvegardées avec les recettes.'}
       </Txt>
       <Txt size={11} color={C.muted} style={{ marginTop: 10, textAlign: 'center', opacity: 0.7 }}>{buildLabel()}</Txt>
     </Sheet>

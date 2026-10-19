@@ -7,8 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FolderSheet, RecipePickerSheet } from '@/components/sheets';
 import { Brut, BrutBox, Chip, Display, Icon, StatusShade, STICKER_LAG, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
+import { canCook } from '@/lib/books';
 import { photoOf, type Recipe } from '@/lib/data';
-import { useStore } from '@/lib/store';
+import { useRole, useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
 
 export default function FolderScreen() {
@@ -16,11 +17,12 @@ export default function FolderScreen() {
   const insets = useSafeAreaInsets();
   const folder = useStore((s) => s.folders.find((f) => f.id === id));
   const recipes = useStore((s) => s.recipes);
+  const cooks = canCook(useRole());
   const [editOpen, setEditOpen] = useState(false);
   const [pickOpen, setPickOpen] = useState(false);
   if (!folder) return null;
   const sw: Swatch = folder.color ?? color ?? 'amber';
-  const list = folder.ids.map((rid) => recipes.find((r) => r.id === rid)).filter((r): r is Recipe => !!r);
+  const list = folder.ids.map((rid) => recipes.find((r) => r.id === rid)).filter((r): r is Recipe => !!r && !r.deletedAt);
   const cover = list.find((r) => r.sticker || photoOf(r));
 
   return (
@@ -30,9 +32,11 @@ export default function FolderScreen() {
           <Brut radius={12} style={styles.sq} onPress={() => router.back()} accessibilityLabel="Retour">
             <Icon name="arrow-back" />
           </Brut>
-          <Brut radius={12} style={styles.sq} onPress={() => setEditOpen(true)} accessibilityLabel="Modifier le dossier">
-            <Icon name="edit" size={20} />
-          </Brut>
+          {cooks ? (
+            <Brut radius={12} style={styles.sq} onPress={() => setEditOpen(true)} accessibilityLabel="Modifier le dossier">
+              <Icon name="edit" size={20} />
+            </Brut>
+          ) : null}
         </View>
 
         <BrutBox color={C[sw]} radius={24} style={styles.head}>
@@ -66,10 +70,12 @@ export default function FolderScreen() {
               <Txt style={{ textAlign: 'center' }}>Ce dossier est vide pour l’instant.</Txt>
             </View>
           ) : null}
-          <Brut color={C.amber} radius={16} style={styles.add} onPress={() => setPickOpen(true)}>
-            <Icon name="playlist-add" />
-            <Display size={17}>{list.length ? 'Ajouter ou retirer des recettes' : 'Ranger des recettes ici'}</Display>
-          </Brut>
+          {cooks ? (
+            <Brut color={C.amber} radius={16} style={styles.add} onPress={() => setPickOpen(true)}>
+              <Icon name="playlist-add" />
+              <Display size={17}>{list.length ? 'Ajouter ou retirer des recettes' : 'Ranger des recettes ici'}</Display>
+            </Brut>
+          ) : null}
         </View>
       </ScrollView>
 

@@ -84,7 +84,7 @@ export function FolderSheet({ visible, onClose, folder, defaultColor = 'amber', 
   };
   const remove = () => {
     if (!folder) return;
-    Alert.alert('Supprimer ce dossier ?', 'Les recettes qu’il contient restent dans ta bibliothèque.', [
+    Alert.alert('Supprimer ce dossier ?', 'Les recettes qu’il contient restent dans le livre.', [
       { text: 'Annuler', style: 'cancel' },
       {
         text: 'Supprimer',
@@ -148,7 +148,8 @@ export function FolderSheet({ visible, onClose, folder, defaultColor = 'amber', 
 export function RecipePickerSheet({ visible, onClose, folder }: { visible: boolean; onClose: () => void; folder: Folder }) {
   const recipes = useStore((s) => s.recipes);
   const toggleInFolder = useStore((s) => s.toggleInFolder);
-  const sorted = [...recipes].sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+  const inFolder = recipes.filter((r) => !r.deletedAt && folder.ids.includes(r.id)).length;
+  const sorted = recipes.filter((r) => !r.deletedAt).sort((a, b) => a.name.localeCompare(b.name, 'fr'));
   return (
     <Sheet visible={visible} onClose={onClose} title="Ranger des recettes">
       <ScrollView style={{ maxHeight: 420 }} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
@@ -169,7 +170,7 @@ export function RecipePickerSheet({ visible, onClose, folder }: { visible: boole
       </ScrollView>
       <Brut color={C.ink} shadow={C.pink} radius={14} style={styles.cta} onPress={onClose}>
         <Display size={17} color={C.paper}>
-          {folder.ids.length} recette{folder.ids.length > 1 ? 's' : ''} dans le dossier
+          {inFolder} recette{inFolder > 1 ? 's' : ''} dans le dossier
         </Display>
       </Brut>
     </Sheet>

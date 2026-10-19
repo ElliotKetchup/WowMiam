@@ -1,13 +1,18 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { MiniCover } from '@/components/books';
+import { Sheet } from '@/components/sheets';
 import { Brut, BrutBox, Chip, Display, Icon, StatusShade, tap, Txt } from '@/components/ui';
 import { Sticker } from '@/components/sticker';
-import { addedLabel, formatQty, photoOf } from '@/lib/data';
-import { useStore } from '@/lib/store';
+import { useAccount } from '@/lib/account';
+import { type Book, canCook, firstName } from '@/lib/books';
+import { copyRecipeToBook } from '@/lib/cloud';
+import { addedLabel, formatQty, photoOf, type Recipe } from '@/lib/data';
+import { useRole, useStore } from '@/lib/store';
 import { C, type Swatch, fg } from '@/lib/theme';
 
 /** Shrinks the hero title so its longest word never breaks mid-word in the ~200 dp left of the sticker. */
@@ -23,6 +28,9 @@ export default function RecipeScreen() {
   const recipe = useStore((s) => s.recipes.find((r) => r.id === id));
   const serves = useStore((s) => (recipe ? s.serves[recipe.id] ?? recipe.serves : 2));
   const setServes = useStore((s) => s.setServes);
+  const cooks = canCook(useRole());
+  const myUid = useAccount((s) => s.account?.uid);
+  const copyAction = useCopyToMyBook(recipe);
   const [checked, setChecked] = useState<ReadonlySet<number>>(new Set());
 
   if (!recipe) {
@@ -53,14 +61,21 @@ export default function RecipeScreen() {
           <Brut radius={12} style={styles.sq} onPress={() => router.back()} accessibilityLabel="Retour">
             <Icon name="arrow-back" />
           </Brut>
-          <Brut radius={12} style={styles.edit} onPress={() => router.push({ pathname: '/create', params: { id: recipe.id } })} accessibilityLabel="Modifier la recette">
-            <Icon name="edit" size={20} />
-            <Txt font="bold" size={14}>Modifier</Txt>
-          </Brut>
+          {cooks ? (
+            <Brut radius={12} style={styles.edit} onPress={() => router.push({ pathname: '/create', params: { id: recipe.id } })} accessibilityLabel="Modifier la recette">
+              <Icon name="edit" size={20} />
+              <Txt font="bold" size={14}>Modifier</Txt>
+            </Brut>
+          ) : (
+            copyAction.button
+          )}
         </View>
 
         <BrutBox color={C[sw]} radius={24} style={styles.hero}>
-          <Txt font="semi" size={13} color={fg(sw)} style={{ opacity: 0.85, marginBottom: 6 }}>{addedLabel(recipe.addedAt)}</Txt>
+          <Txt font="semi" size={13} color={fg(sw)} style={{ opacity: 0.85, marginBottom: 6 }}>
+            {addedLabel(recipe.addedAt)}
+            {recipe.byUid && recipe.byUid !== myUid ? ` · ajoutée par ${firstName(recipe.byName)}` : ''}
+          </Txt>
           <Display size={heroTitleSize(recipe.name)} color={fg(sw)} style={{ maxWidth: '58%' }} numberOfLines={5}>{recipe.name}</Display>
           <Sticker key={photoOf(recipe) ?? recipe.sticker} recipe={recipe} size={186} rotate={-12} style={{ right: -10, top: -40 }} delay={260} />
         </BrutBox>
@@ -141,11 +156,69 @@ export default function RecipeScreen() {
           </Brut>
         </View>
       ) : null}
+      {copyAction.sheet}
     </View>
   );
 }
 
+/** For a Commis: keep a copy of this recipe in one of my own books. The sheet goes at the screen's root. */
+function useCopyToMyBook(recipe: Recipe | undefined): { button: ReactNode; sheet: ReactNode } {
+  const books = useStore((s) => s.books);
+  const bookId = useStore((s) => s.bookId);
+  const targets = books.filter((b) => b.id !== bookId && canCook(b.role));
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle');
+  const [pickOpen, setPickOpen] = useState(false);
+  const [doneIn, setDoneIn] = useState('');
+  const [problem, setProblem] = useState<string | null>(null);
+
+  const copy = async (book: Book) => {
+    if (!recipe) return;
+    setPickOpen(false);
+    setState('busy');
+    setProblem(null);
+    try {
+      await copyRecipeToBook(recipe, book.id);
+      setDoneIn(book.name);
+      setState('done');
+    } catch (e) {
+      setProblem(e instanceof Error ? e.message : String(e));
+      setState('idle');
+    }
+  };
+
+  const button = (
+    <View style={{ alignItems: 'flex-end', flexShrink: 1, marginLeft: 12 }}>
+      <Brut
+        color={state === 'done' ? C.olive : C.tile}
+        radius={12}
+        style={styles.edit}
+        disabled={state !== 'idle' || !targets.length}
+        onPress={() => (targets.length === 1 ? copy(targets[0]) : setPickOpen(true))}
+        accessibilityLabel="Copier dans mon livre">
+        {state === 'busy' ? <ActivityIndicator color={C.ink} /> : <Icon name={state === 'done' ? 'check' : 'content-copy'} size={20} />}
+        <Txt font="bold" size={14} numberOfLines={1} style={{ flexShrink: 1 }}>{state === 'done' ? `Copiée dans « ${doneIn} »` : 'Copier dans mon livre'}</Txt>
+      </Brut>
+      {problem ? <Txt size={12} font="semi" color={C.coral} style={{ marginTop: 6 }}>{problem}</Txt> : null}
+    </View>
+  );
+  const sheet = (
+    <Sheet visible={pickOpen} onClose={() => setPickOpen(false)} title="Copier dans…">
+      <View style={{ gap: 12, paddingBottom: 8 }}>
+        {targets.map((b) => (
+          <Brut key={b.id} radius={16} style={styles.target} onPress={() => copy(b)}>
+            <MiniCover color={b.color} width={36} height={48} />
+            <Display size={19} style={{ flex: 1 }} numberOfLines={2}>{b.name}</Display>
+            <Icon name="chevron-right" />
+          </Brut>
+        ))}
+      </View>
+    </Sheet>
+  );
+  return { button, sheet };
+}
+
 const styles = StyleSheet.create({
+  target: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 },
   bar: { height: 56, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   edit: { height: 44, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6 },
   sq: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },

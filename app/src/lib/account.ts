@@ -4,6 +4,7 @@ import { create } from 'zustand';
 export type SyncStatus = 'off' | 'syncing' | 'synced' | 'error';
 
 export interface Account {
+  uid: string;
   name: string | null;
   email: string | null;
   photo: string | null;

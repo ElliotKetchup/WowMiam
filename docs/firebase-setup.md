@@ -4,9 +4,21 @@ Project: `wowmiam-2fa59`. Everything below is done once, in the browser. Goal: p
 Blaze plan while never paying anything — strict rules, a 1 budget, and a kill switch that detaches
 billing at 0.50.
 
-## 1. Firestore rules (recipes)
+## 1. Firestore rules (recipes, shared books)
 
 Firestore Database → **Rules** → paste [`app/firestore.rules`](../app/firestore.rules) → **Publish**.
+Re-publish whenever that file changes: the app can't share books until the published rules match it.
+They are tested in [`cloud/tests`](../cloud/tests/README.md) (`npm test`, Firestore emulator).
+
+How the data is laid out:
+
+- `books/{bookId}`: name, colour, owner. Under it `recipes`, `folders`, `members/{uid}` (rank:
+  `chef`, `sous` or `commis`) and `invites/{code}` (the brigade's list of open invitations).
+- `invites/{code}`: the invitation itself, readable by anyone signed in who knows the code, usable
+  once, for 7 days. Joining marks it used in the same write that adds the member, so a code can't be
+  reused or turned into a higher rank.
+- `users/{uid}/books`: the books on someone's shelf. `users/{uid}/recipes|folders` is the sync from
+  before books, copied into the personal book on first sign-in and left in place as a backup.
 
 ## 2. Blaze plan + Storage (photos)
 

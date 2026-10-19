@@ -36,6 +36,11 @@ export interface Recipe {
   addedAt: number;
   /** Last local edit; set by the store and used to merge with the cloud copy. Absent on untouched seed recipes. */
   updatedAt?: number;
+  /** In the trash since then; purged after TRASH_DAYS. */
+  deletedAt?: number;
+  /** Who added it to a shared book (absent on seeds and on recipes added before books existed). */
+  byUid?: string;
+  byName?: string;
   note: string;
   ingredients: Ingredient[];
   steps: Step[];
@@ -106,6 +111,9 @@ export function seedRecipes(now: number = Date.now()): Recipe[] {
 }
 
 export const SEED_RECIPE_IDS: ReadonlySet<string> = new Set(['pizza', 'endives', 'aubergines', 'pates', 'composee', 'courgettes']);
+
+/** An example recipe nobody has edited: it ships with every install, so it never moves between books. */
+export const isUntouchedSeed = (r: Pick<Recipe, 'id' | 'updatedAt'>): boolean => SEED_RECIPE_IDS.has(r.id) && r.updatedAt === undefined;
 
 export const SEED_FOLDERS: Folder[] = [
   { id: 'soirs', name: 'Soirs de semaine', ids: ['pizza', 'pates', 'aubergines'] },

@@ -1,9 +1,97 @@
 rules_version = '2';
-// Each person reads and writes only their own recipes and folders: users/{uid}/recipes, users/{uid}/folders.
+// Wow Miam: every recipe lives in a book (books/{bookId}), shared with that book's brigade.
+//   chef   (Chef de cuisine): everything, including the brigade and the book itself
+//   sous   (Sous-chef): every recipe and folder; may invite Commis
+//   commis (Commis): reads only
+// users/{uid}/books lists the books on someone's shelf (written by them only);
+// users/{uid}/recipes|folders is the pre-books sync, left in place as a backup.
+// invites/{code} lets someone who isn't in the brigade yet look a code up and use it, once, before it expires.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function memberDoc(b, uid) { return /databases/$(database)/documents/books/$(b)/members/$(uid); }
+    function isMember(b) { return signedIn() && exists(memberDoc(b, me())); }
+    function roleIn(b) { return get(memberDoc(b, me())).data.role; }
+    function isChef(b) { return isMember(b) && roleIn(b) == 'chef'; }
+    function cooks(b) { return isMember(b) && roleIn(b) in ['chef', 'sous']; }
+    function mayInvite(b, role) {
+      return isMember(b) && ((roleIn(b) == 'chef' && role in ['sous', 'commis']) || (roleIn(b) == 'sous' && role == 'commis'));
+    }
+
     match /users/{uid}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, write: if signedIn() && me() == uid;
+    }
+
+    match /books/{b} {
+      allow read: if isMember(b);
+      allow create: if signedIn() && request.resource.data.owner == me();
+      // Sous-chefs may rename or recolour; only the chef hands the book (its owner field) over.
+      allow update: if cooks(b) && (request.resource.data.owner == resource.data.owner || isChef(b));
+      allow delete: if isChef(b);
+
+      match /recipes/{r} {
+        allow read: if isMember(b);
+        allow write: if cooks(b);
+      }
+      match /folders/{f} {
+        allow read: if isMember(b);
+        allow write: if cooks(b);
+      }
+
+      match /members/{uid} {
+        // Your own entry stays readable, so being removed reads as "gone" rather than as an error.
+        allow read: if isMember(b) || (signedIn() && me() == uid);
+        // Someone only ever adds themselves: as the founder of a book created in the same write,
+        // or with an invite of this book that this same write marks as used by them.
+        allow create: if signedIn() && me() == uid && request.resource.data.uid == uid && (founding() || joining());
+        // The chef changes ranks (including handing over their own toque).
+        allow update: if isChef(b)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+          && request.resource.data.role in ['chef', 'sous', 'commis'];
+        // The chef removes others; anyone but the chef can leave; the chef's own entry goes once the book is deleted.
+        allow delete: if (isChef(b) && me() != uid)
+          || (signedIn() && me() == uid && (resource.data.role != 'chef' || !exists(/databases/$(database)/documents/books/$(b))));
+
+        function founding() {
+          return !exists(/databases/$(database)/documents/books/$(b))
+            && getAfter(/databases/$(database)/documents/books/$(b)).data.owner == uid
+            && request.resource.data.role == 'chef';
+        }
+        function joining() {
+          let path = /databases/$(database)/documents/invites/$(request.resource.data.via);
+          let before = get(path).data;
+          return before.bookId == b
+            && before.usedBy == null
+            && before.expiresAt > request.time
+            && getAfter(path).data.usedBy == uid
+            && request.resource.data.role == before.role;
+        }
+      }
+
+      // The brigade's view of its open invitations (the code itself is the document id).
+      match /invites/{code} {
+        allow read: if isMember(b);
+        allow create: if mayInvite(b, request.resource.data.role) && request.resource.data.by == me();
+        allow delete: if isChef(b) || (isMember(b) && resource.data.by == me());
+      }
+    }
+
+    match /invites/{code} {
+      // Knowing the code is what lets you see it; nobody can list codes.
+      allow get: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.by == me()
+        && request.resource.data.usedBy == null
+        && mayInvite(request.resource.data.bookId, request.resource.data.role);
+      // Using it: only to mark it used by yourself, while it's valid, in the write that adds you to the brigade.
+      allow update: if signedIn()
+        && resource.data.usedBy == null
+        && resource.data.expiresAt > request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usedBy', 'usedAt'])
+        && request.resource.data.usedBy == me()
+        && existsAfter(memberDoc(resource.data.bookId, me()));
+      allow delete: if signedIn() && (resource.data.by == me() || isChef(resource.data.bookId));
     }
   }
 }

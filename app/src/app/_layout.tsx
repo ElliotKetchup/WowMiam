@@ -38,6 +38,10 @@ export default function RootLayout() {
         <Stack.Screen name="cook/[id]" options={{ animation: 'slide_from_bottom', contentStyle: { backgroundColor: C.aubergine } }} />
         <Stack.Screen name="folder/[id]" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="create" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="brigade" />
+        <Stack.Screen name="inviter" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="invite/[code]" options={{ animation: 'fade_from_bottom' }} />
+        <Stack.Screen name="corbeille" />
       </Stack>
       <UpdateBanner />
     </>
