@@ -7,7 +7,7 @@ import { planMove } from '@/lib/books';
 import * as cloud from '@/lib/cloud';
 import { contentOf, useStore } from '@/lib/store';
 
-const role = process.argv[2] as 'alice' | 'bob' | 'carol' | 'dave' | 'alice2';
+const role = process.argv[2] as 'alice' | 'bob' | 'carol' | 'dave' | 'alice2' | 'erin';
 const who = role === 'alice2' ? 'alice' : role;
 const DIR = process.argv[3];
 const flag = (name: string) => `${DIR}/${name}`;
@@ -34,13 +34,23 @@ const env = await initializeTestEnvironment({
   projectId: 'wowmiam-sync',
   firestore: { rules: readFileSync(process.argv[4], 'utf8'), host: '127.0.0.1', port: 8089 },
 });
-const names = { alice: 'Alice Martin', bob: 'Bob Durand', carol: 'Carol Petit', dave: 'Dave Leroy' };
+const names = { alice: 'Alice Martin', bob: 'Bob Durand', carol: 'Carol Petit', dave: 'Dave Leroy', erin: 'Erin Moreau' };
 (globalThis as any).__db = env.authenticatedContext(who).firestore();
 (globalThis as any).__user = { uid: who, displayName: names[who], email: `${who}@example.com`, photoURL: null };
 
 await until('hydration', () => useStore.persist.hasHydrated());
 
 if (role === 'alice2') await waitFlag('alice-exit');
+if (role === 'erin') {
+  // An account from the first books version: its personal book is still called "Mon livre".
+  const { doc, writeBatch } = await import('firebase/firestore');
+  const db = (globalThis as any).__db;
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'books', 'erinbook'), { name: 'Mon livre', color: 'plum', owner: 'erin', createdAt: 1 });
+  batch.set(doc(db, 'books', 'erinbook', 'members', 'erin'), { uid: 'erin', name: 'Erin Moreau', photo: null, role: 'chef', joinedAt: 1, via: null, invitedBy: null });
+  batch.set(doc(db, 'users', 'erin', 'books', 'erinbook'), { role: 'chef', personal: true, joinedAt: 1 });
+  await batch.commit();
+}
 if (role === 'dave') {
   // An account from before books: its recipes live under users/dave.
   const { doc, setDoc } = await import('firebase/firestore');
@@ -61,7 +71,12 @@ if (role === 'bob') {
 cloud.initCloud();
 await until('first sync', () => useAccount.getState().status === 'synced' || (useAccount.getState().status === 'error' && useAccount.getState().error));
 check('first sync ok', useAccount.getState().status === 'synced', useAccount.getState().error ?? '');
-if (role !== 'alice2') check('local book became the personal cloud book', st().books.length === 1 && personalId() !== 'local' && st().bookId === personalId(), JSON.stringify(st().books));
+if (role === 'carol' || role === 'erin') {
+  const expected = role === 'carol' ? 'Le livre de Carol' : 'Le livre d’Erin';
+  await until(`personal book named ${expected}`, () => st().books.find((b) => b.personal)?.name === expected);
+  check(role === 'carol' ? 'new account: book named after its owner' : 'old "Mon livre" renamed after its owner', true);
+}
+if (role !== 'alice2' && role !== 'erin') check('local book became the personal cloud book', st().books.length === 1 && personalId() !== 'local' && st().bookId === personalId(), JSON.stringify(st().books));
 
 try {
   if (role === 'alice') {

@@ -37,6 +37,7 @@ import { useAccount } from './account';
 import {
   type Book,
   DEFAULT_BOOK,
+  DEFAULT_BOOK_NAME,
   type Invite,
   LOCAL_BOOK,
   type Member,
@@ -45,6 +46,7 @@ import {
   canCook,
   copyOf,
   inviteExpiry,
+  personalBookName,
   newInviteCode,
   prepareMove,
   trashExpired,
@@ -274,10 +276,12 @@ async function ensureShelf(user: User): Promise<ShelfEntry[]> {
   if (!snap.empty) return snap.docs.map((d) => entryFrom(d.id, d.data()));
 
   const local = useStore.getState().books.find((b) => b.id === LOCAL_BOOK) ?? DEFAULT_BOOK;
+  // Named after its owner, unless they already renamed it themselves.
+  const name = local.name === DEFAULT_BOOK_NAME ? personalBookName(user.displayName) ?? local.name : local.name;
   const id = doc(collection(db(), 'books')).id;
   const now = Date.now();
   const batch = writeBatch(db());
-  batch.set(bookDoc(id), { name: local.name, color: local.color, owner: user.uid, createdAt: now });
+  batch.set(bookDoc(id), { name, color: local.color, owner: user.uid, createdAt: now });
   batch.set(doc(membersOf(id), user.uid), memberData(user, 'chef', null, null));
   batch.set(doc(shelfOf(user.uid), id), { role: 'chef', personal: true, joinedAt: now });
   await batch.commit();
@@ -351,6 +355,11 @@ function watchBook(s: Session, id: string): () => void {
       const d = snap.data() ?? {};
       s.meta.set(id, { name: d.name ?? 'Livre', color: (d.color as Swatch) ?? 'plum' });
       publishBooks();
+      // Personal books created before they were named after their owner: rename once, the listener then shows it.
+      const named = personalBookName(s.user.displayName);
+      if (s.entries.get(id)?.personal && d.owner === s.user.uid && d.name === DEFAULT_BOOK_NAME && named) {
+        updateDoc(bookDoc(id), { name: named }).catch(() => undefined);
+      }
     },
     gone,
   );

@@ -55,7 +55,16 @@ export interface Invite {
 
 /** The book a phone has before any account: becomes the personal book on first sign-in. */
 export const LOCAL_BOOK = 'local';
-export const DEFAULT_BOOK: Book = { id: LOCAL_BOOK, name: 'Mon livre', color: 'plum', role: 'chef', personal: true };
+/** Name of the book before we know whose it is (no account yet). */
+export const DEFAULT_BOOK_NAME = 'Mon livre';
+export const DEFAULT_BOOK: Book = { id: LOCAL_BOOK, name: DEFAULT_BOOK_NAME, color: 'plum', role: 'chef', personal: true };
+
+/** "Le livre d’Elliot", "Le livre de Léa"; null when the account has no name to go by. */
+export function personalBookName(fullName: string | null | undefined): string | null {
+  const first = fullName?.trim().split(/\s+/)[0];
+  if (!first) return null;
+  return /^[aeiouyhàâäéèêëîïôöùûü]/i.test(first) ? `Le livre d’${first}` : `Le livre de ${first}`;
+}
 export const MAX_MEMBERS = 10;
 export const INVITE_DAYS = 7;
 export const TRASH_DAYS = 30;
